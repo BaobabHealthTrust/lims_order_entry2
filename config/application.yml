@@ -1,9 +1,0 @@
-page_size: 40
-district: Lilongwe
-facility_name: Likuni Mission Hospital
-receiving_facility: Kamuzu Central Hospital
-bart2_address: http://localhost:15000
-facility_code: 'LIK'
-central_repo: http://localhost:3004
-national-repo-node: http://localhost:3014
-
