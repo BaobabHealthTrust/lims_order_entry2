@@ -1,0 +1,55 @@
+
+<style>
+
+    li {
+        color: black;
+        font-family: "Nimbus Sans L","Arial Narrow",sans-serif;
+        font-size: 1.5em;
+        list-style: outside none none;
+        margin-bottom: 5px;
+        margin-top: 5px;
+        padding-left: 5px;
+        padding-right: 5px;
+    }
+</style>
+
+
+
+<script>
+    var tt_cancel_destination = "/patient/show?identifier=<%= params[:identifier]%>";
+
+
+    function set_ajaxURL_for_suggestions(url, filter_value) {
+        $('touchscreenInput'+tstCurrentPage).setAttribute('ajaxURL', url + filter_value + "&search_string=");
+        listSuggestions(tstCurrentPage);
+    }
+
+</script>
+
+
+<%= form_tag("/patient/new_order", id: "create-form", method: 'post', enctype: 'multipart/form-data') do %>
+
+<input type="hidden" name="identifier" value="<%= params[:identifier]%>" />
+
+<%= select_tag "specimen_type", options_for_select(@specimen_types),
+               {:helpText => 'Specimen type',
+                :id => "specimen_type",
+                :tt_requireNextClick => false,
+                :tt_onLoad => "__$('nextButton').style.display = 'none';"
+               }%>
+
+<%= select_tag 'test_types[]', nil,
+               :helpText => "Select test types" ,
+               :tt_onLoad => "__$('nextButton').style.display = 'inline';
+                __$('keyboard').style.display = 'block'; set_ajaxURL_for_suggestions('/patient/test_types?specimen_type=' ,document.getElementById('specimen_type').value);",
+               :multiple =>  true,
+               :tt_pageStyleClass => "longSelectList"
+%>
+
+<%= select_tag "priority", options_for_select(['', 'Routine', 'Stat']),
+               {:helpText => 'Specify Priority',
+                :id => "priority",
+                :tt_onLoad => "__$('nextButton').style.display = 'block';"
+               }%>
+
+<% end %>

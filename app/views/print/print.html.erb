@@ -1,0 +1,20 @@
+<html>
+<style>
+body{
+  font-family: "Nimbus Sans L", "Arial Narrow", sans-serif;
+}
+</style>
+<body>
+<br/><br/><br/>
+  <center><h1><%= raw @message %></h1></center>
+  <iframe src="<%= raw @print_url %>" style='display:none'></iframe>
+
+  </body>
+  <script>
+		setTimeout(redirect, 2000);
+    function redirect() {
+        document.location = '<%= raw @redirect_url %>'
+    }
+
+  </script>
+</html>

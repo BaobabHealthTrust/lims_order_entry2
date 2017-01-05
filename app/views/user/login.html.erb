@@ -1,0 +1,47 @@
+  <%= stylesheet_link_tag "user_login" %>
+
+  <script language="javascript">
+    doListSuggestions = false; //speeds up keyboard response
+
+    var setFocusTimeout = 1000;
+    var checkForBarcodeTimeout = 1500;
+   
+    function loadBarcodePage() {
+       focusForBarcodeInput();
+       moveNext();
+    }
+
+    function focusForBarcodeInput(){
+      var barcode = document.getElementById("touchscreenInput2");
+      if (barcode) {
+         barcode.focus();
+         window.setTimeout("focusForBarcodeInput()", setFocusTimeout);
+      }
+    }
+    
+   
+    function moveNext(){
+      usertext=document.getElementById("touchscreenInput2");
+      if (usertext.value.match(/.+\$$/i) != null){
+        usertext.value=usertext.value.substring(0,usertext.value.length -1);
+        gotoNextPage();
+      }
+       window.setTimeout("moveNext()", checkForBarcodeTimeout);
+    }    
+    window.addEventListener("load", loadBarcodePage, false);
+  </script>
+    <form action="/user/do_login" method="post">
+    <label for="user_username">Username</label>
+    <%= text_field(:user, :username, :helpText=> "Enter Username", 
+        :textCase => "lower",
+        :field_type => "password"
+        ) %><br>
+    <label for="user_password">Password</label>
+    <%= password_field(:user, :password, :helpText => "Enter Password", 
+        :textCase => "lower",
+        :field_type => "password") %><br>
+
+    <label for="user_location">Location</label>
+    <%= text_field_tag('location', '', :helpText=> "Location", :tt_onload=>"loadBarcodePage") %><br>
+    <%= submit_tag value="Submit"%>
+   </form>
