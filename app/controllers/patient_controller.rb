@@ -115,7 +115,7 @@ class PatientController < ApplicationController
              :sample_collector_first_name=> (session[:user].strip.split(/\s+/)[0] rescue nil),
              :sample_collector_phone_number=> '',
              :sample_collector_id=> '',
-             :sample_order_location=> session[:location],
+             :sample_order_location=> (configs['facility_name'] || session[:location]),
              :sample_type=> specimen_type,
              :date_sample_drawn=> Date.today.strftime("%a %b %d %Y"),
              :tests=> test_types,
