@@ -110,7 +110,7 @@ class PatientController < ApplicationController
              :phone_number=> (attributes['cell_phone_number'] ||
                  attributes['home_phone_number'] ||
                  attributes['office_phone_number']),
-             :reason_for_test=> '',
+             :reason_for_test=> 'Routine',
              :sample_collector_last_name=> (session[:user].strip.split(/\s+/)[1] rescue nil),
              :sample_collector_first_name=> (session[:user].strip.split(/\s+/)[0] rescue nil),
              :sample_collector_phone_number=> '',
@@ -122,7 +122,7 @@ class PatientController < ApplicationController
              :sample_priority=> params[:priority] || 'Routine',
              :target_lab=> configs['receiving_facility'],
              :tracking_number => "",
-             :art_start_date => "",
+             :art_start_date => ("" rescue nil),
              :date_dispatched => "",
              :date_received => Time.now,
              :return_json => 'true'
