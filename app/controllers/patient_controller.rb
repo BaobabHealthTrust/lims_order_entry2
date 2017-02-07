@@ -3,6 +3,75 @@ class PatientController < ApplicationController
     render :layout => false
   end
 
+  def captureDispatcher
+          load_order_samples();
+  end
+  
+  def load_order_samples
+   configs = YAML.load_file "#{Rails.root}/config/application.yml"
+   facility_name = configs['facility_name']
+    
+   @data = []
+   @samples = []
+   count =0
+ 
+   $data = Order.generic
+
+      $data.each do |row|
+
+        rs = row['results'].keys.first
+        rs.strip
+
+        next if facility_name != row['order_location']
+
+        next if row['status'] != 'Drawn' || rs != 'Viral Load'
+        @data[count] = row['_id'] + "-"+ row['sample_type']
+ 
+        count +=1
+      end  
+
+      $samples = Order.generic
+      $got_samples= []
+      counter =0
+
+       $samples.each do |row|
+
+        rs = row['sample_type']
+        rs.strip
+
+        next if $got_samples.include?(rs)
+
+          $got_samples[counter] =  rs
+
+        counter +=1
+      end  
+
+
+
+  end
+
+  def postDispatcher
+
+     configs = YAML.load_file "#{Rails.root}/config/application.yml"   
+     un_orders =  params[:undispatched_orders]
+     track_number = ""
+     dis_name = params[:dispatcher]
+     date_dis = params[:date_dispatched]       
+
+      un_orders.each do |r|
+        track_number = r.split('-')
+          son = { :return_path => "http://#{request.host}:#{request.port}",
+             :tracking_number => track_number[0],
+             :date_dispatched => date_dis,
+             :dispatcher => dis_name,
+             :return_json => 'true'
+               }
+         url = "#{configs['central_repo']}/pass_json/"
+         RestClient.post(url,son.to_json,:content_type =>'application/json')
+      end   
+         redirect_to action: 'barcode'
+  end
+
   def show
 
     configs = YAML.load_file "#{Rails.root}/config/application.yml"
@@ -83,7 +152,9 @@ class PatientController < ApplicationController
 
   def new_order
     specimen_type = CGI.unescapeHTML(params[:specimen_type])
-    test_types =  params['test_types'].collect{|t| CGI.unescapeHTML(t.strip)}
+	
+    test_types =  params[:test_types]
+	
 
     configs = YAML.load_file "#{Rails.root}/config/application.yml"
     bart2_address = configs['bart2_address'] + "/people/remote_demographics"
@@ -129,6 +200,7 @@ class PatientController < ApplicationController
     }
 
     url = "#{configs['national-repo-node']}/create_hl7_order"
+
     paramz = JSON.parse(RestClient.post(url, json))
     print_url = "/patient/print_tracking_number?tracking_number=#{paramz['tracking_number']}"
     print_and_redirect(print_url, "/patient/show?identifier=#{national_id}")

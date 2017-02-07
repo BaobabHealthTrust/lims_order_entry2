@@ -15,6 +15,8 @@ Rails.application.routes.draw do
   get 'user/login'
   post 'user/login'
   post 'user/do_login'
+  get  'patient/captureDispatcher'
+  post 'patient/postDispatcher'
 
   # Example of regular route:
   #   get 'products/:id' => 'catalog#view'
