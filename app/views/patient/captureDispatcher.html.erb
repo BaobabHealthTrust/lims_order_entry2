@@ -1,0 +1,33 @@
+   tstCurrentDate;
+  <form action="/patient/postDispatcher" method="post">
+
+
+
+    <%= text_field_tag 'dispatcher', nil,
+      {:helpText=> "Dispatcher Name", 
+        :field_type => "text"
+        }%>
+  
+     
+<%= text_field_tag "date_dispatched",nil,
+    {
+    :field_type => 'label',
+    :helpText => "dispatching Date",
+    :value => Date.today
+    }%>
+
+<%= select_tag 'selected_samples[]', options_for_select($got_samples),
+               {:helpText => 'Select Order Samples',
+                :id => "specimen_type",
+                :multiple =>  true,
+                }%>
+
+
+   <%= select_tag 'undispatched_orders[]', options_for_select(@data),
+               {:helpText => 'Orders dispatching',
+                :id => "specimen_type",
+                :multiple =>  true,
+                }%>
+
+    <%= submit_tag value="Submit"%>
+   </form>
