@@ -4,23 +4,22 @@ class PatientController < ApplicationController
   end
 
   def captureDispatcher
-          load_orders()
+      load_order_samples()
   end
   
   def load_order_samples
    @samples = nil
-   $samples = Order.generic
-   $got_samples= []
+   @samples = Order.generic
+   @got_samples= [" "]
    counter =0
     #getting samples 
-      $samples.each do |row|
+      @samples.each do |row|
         rs = row['sample_type']
         rs.strip
-        next if $got_samples.include?(rs)
-          $got_samples[counter] =  rs
+        next if @got_samples.include?(rs)
+          @got_samples[counter] =  rs
         counter +=1
-      end 
-           
+      end       
   end
 
   def load_orders
@@ -29,15 +28,18 @@ class PatientController < ApplicationController
      facility_name = configs['facility_name']
      @data = []
      count =0 
-     $data = Order.generic
-      $data.each do |row|
-        rs = row['results']
+     @data_got = nil
+     @data_got = Order.generic
+
+     @data_got.each do |row|
+        rs = row['sample_type']
         next if facility_name != row['order_location']
-        next if row['status'] != 'Drawn' || !rs.include?("Viral Load")
+        next if row['status'] != 'Drawn' || !rs.include?(params[:selected_sample])
         @data[count] = row['_id'] + "-"+ row['sample_type']
         count +=1
-      end
+     end
 
+     render :text => @data.collect{|name| "<li>#{name}"}.join("</li>")+"</li>"
   end
 
 

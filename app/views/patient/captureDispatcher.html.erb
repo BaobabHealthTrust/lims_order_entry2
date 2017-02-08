@@ -1,27 +1,41 @@
    tstCurrentDate;
   <form action="/patient/postDispatcher" method="post">
-
-    <%= text_field_tag 'dispatcher', nil,
-         {:helpText=> "Dispatcher Name", 
-        :field_type => "text"
-    }%>
+      <%= text_field_tag 'dispatcher', nil,
+      {           :helpText=> "Dispatcher Name", 
+                  :field_type => "text"
+      }%>
      
-    <%= text_field_tag "date_dispatched",nil,
-    {
-    :field_type => 'date',
-    :helpText => "dispatching Date",
-    :value => Date.today
-    }%>
+      <%= text_field_tag "date_dispatched",nil,
+      {
+                  :field_type => 'date',
+                  :helpText => "dispatching Date",
+                  :value => Date.today
+      }%>
 
+      <%= select_tag 'selected_sample', options_for_select(@got_samples),
+      {           :helpText => 'Select Sample Type',
+                  :id => "specimen_type",
+                  :multiple =>  false,
+                  :tt_onUnLoad=>"setUrl()"              
+      }%>
 
-   <%= select_tag 'undispatched_orders[]', options_for_select(@data),
-               {:helpText => 'Orders dispatching',
-                :id => "specimen_type",
-                :multiple =>  true                
-    }%>
-
+      <%= select_tag "undispatched_orders[]",nil,
+      {
+                :helpText => "Order dispatching",
+                :multiple =>  true,
+                :id => "specimen"
+      }%>
     <%= submit_tag value="Submit"%>
+  </form>
 
-   </form>
+   <script type="text/javascript">
+    tt_cancel_destination ="barcode";
+
+     function setUrl(){
+
+        var value = __$("touchscreenInput"+tstCurrentPage).value;
+        __$("specimen").setAttribute("ajaxURL","/load_orders?selected_sample="+value);
+     }
+   </script>
 
 
