@@ -4,6 +4,11 @@
   <meta http-equiv="content-type" content="text/html;charset=UTF-8" />
   <% @title = "#{controller.controller_name.humanize} #{controller.action_name.humanize}" rescue ""  %>
   <title> Lab Order Entry <%=@title%></title>
+  <script language="javascript">
+      tstUsername = "";
+      tstCurrentDate = "<%= Time.now.strftime("%Y-%m-%d") %>";
+      var tt_cancel_destination = null;
+    </script>
   <%#= stylesheet_link_tag "background" %>
   <%#= stylesheet_link_tag :all %>
   <%#= javascript_include_tag :defaults %>

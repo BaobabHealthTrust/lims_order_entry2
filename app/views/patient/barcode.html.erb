@@ -11,6 +11,12 @@
                     window.location = '/user/logout';
                     }
 
+                    function loadDispatchingWindow()
+                    {
+                            window.location = '/patient/captureDispatcher';
+                    }
+
+
             function informUser(){
                 <% if @patient_not_found %>
                         showMessage("Patient not found. Scan again");
@@ -20,26 +26,26 @@
             window.setTimeout("informUser();", 350);
             
             function showMessage(aMessage, withCancel, timed) {
-            if (typeof (tstMessageBar) == "undefined"){
-            __$("content").innerHTML += "<div id='messageBar' class='messageBar'></div>";
-                    tstMessageBar = __$('messageBar');
-            }
+                if (typeof (tstMessageBar) == "undefined"){
+                __$("content").innerHTML += "<div id='messageBar' class='messageBar'></div>";
+                        tstMessageBar = __$('messageBar');
+                }
 
-            var messageBar = tstMessageBar;
-                    messageBar.innerHTML = aMessage +
-                    "<br />" + (typeof (withCancel) != "undefined" ? (withCancel == true ?
-                            "<button onmousedown='tstMessageBar.style.display = \"none\"; " +
-                            "clearTimeout(tstTimerHandle);'><span>" + (typeof (tstLocaleWords) != "undefined" ?
-                                    (tstLocaleWords["cancel"] ? tstLocaleWords["cancel"] : "Cancel") : "Cancel") + "</span></button>" : "") : "") +
-                    "<button style='' onmousedown='tstMessageBar.style.display = \"none\"; " +
-                    "clearTimeout(tstTimerHandle); eval(tstTimerFunctionCall);'><span>" + (typeof (tstLocaleWords) != "undefined" ?
-                            (tstLocaleWords["ok"] ? tstLocaleWords["ok"] : "OK") : "OK") + "</span></button>";
-                    if (aMessage.length > 0) {
-            messageBar.style.display = 'block'
-                    if ((typeof (timed) == "undefined" ? true : timed) == true){
-            window.setTimeout("hideMessage()", 3500)
-            }
-            }
+                var messageBar = tstMessageBar;
+                        messageBar.innerHTML = aMessage +
+                        "<br />" + (typeof (withCancel) != "undefined" ? (withCancel == true ?
+                                "<button onmousedown='tstMessageBar.style.display = \"none\"; " +
+                                "clearTimeout(tstTimerHandle);'><span>" + (typeof (tstLocaleWords) != "undefined" ?
+                                        (tstLocaleWords["cancel"] ? tstLocaleWords["cancel"] : "Cancel") : "Cancel") + "</span></button>" : "") : "") +
+                        "<button style='' onmousedown='tstMessageBar.style.display = \"none\"; " +
+                        "clearTimeout(tstTimerHandle); eval(tstTimerFunctionCall);'><span>" + (typeof (tstLocaleWords) != "undefined" ?
+                                (tstLocaleWords["ok"] ? tstLocaleWords["ok"] : "OK") : "OK") + "</span></button>";
+                        if (aMessage.length > 0) {
+                messageBar.style.display = 'block'
+                        if ((typeof (timed) == "undefined" ? true : timed) == true){
+                window.setTimeout("hideMessage()", 3500)
+                }
+                }
             }
 
             function hideMessage(){
@@ -142,6 +148,14 @@
                     <div id="buttons" class="buttons" style="top:0px">
                         <button id="cancel" class="red left" onclick="logoutUser()"><span>Logout</span></button>
                     </div>
+
+
+                    <div id="buttons" class="buttons" style="top:0px;">
+                        <button id="dispatch" class="blue right" onclick="loadDispatchingWindow()">
+                        <span>Dispatch</span></button>
+                    </div>
+
+
                 </div>
             </div> 
         </div>

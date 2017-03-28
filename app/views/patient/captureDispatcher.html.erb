@@ -1,21 +1,41 @@
    tstCurrentDate;
   <form action="/patient/postDispatcher" method="post">
-      <%= text_field_tag 'dispatcher', nil,
-      {           :helpText=> "Dispatcher Name", 
+      <%= text_field_tag 'id', nil,
+      {           :helpText=> "Dispatcher Id", 
+                  :field_type => "number",
+                  :tt_pageStyleClass => "NumbersOnly WithUnkown"
+      }%>
+      <%= text_field_tag 'f_name', nil,
+      {           :helpText=> "First Name", 
                   :field_type => "text"
       }%>
+
+       <%= text_field_tag 'l_name', nil,
+      {           :helpText=> "Last Name", 
+                  :field_type => "text"
+      }%>
+
+       <%= text_field_tag 'phone', nil,
+      {           :helpText=> "Phone Number", 
+                  :field_type => "number",
+                  :tt_pageStyleClass => "NumbersOnly"
+
+      }%>
      
+
       <%= text_field_tag "date_dispatched",nil,
       {
                   :field_type => 'date',
                   :helpText => "dispatching Date",
-                  :value => Date.today
+                  :value => Date.today,
+                  :tt_pageStyleClass => "NoKeyboard"
       }%>
 
       <%= select_tag 'selected_sample', options_for_select(@got_samples),
       {           :helpText => 'Select Sample Type',
                   :id => "specimen_type",
                   :multiple =>  false,
+                  :tt_pageStyleClass => "longSelectList",
                   :tt_onUnLoad=>"setUrl()"              
       }%>
 
@@ -23,7 +43,8 @@
       {
                 :helpText => "Order dispatching",
                 :multiple =>  true,
-                :id => "specimen"
+                :id => "specimen",
+                :tt_pageStyleClass => "longSelectList"
       }%>
     <%= submit_tag value="Submit"%>
   </form>

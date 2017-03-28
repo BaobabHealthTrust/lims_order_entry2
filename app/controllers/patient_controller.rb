@@ -10,7 +10,7 @@ class PatientController < ApplicationController
   def load_order_samples
    @samples = nil
    @samples = Order.generic
-   @got_samples= [" "]
+   @got_samples= [""]
    counter =0
     #getting samples 
       @samples.each do |row|
@@ -30,12 +30,16 @@ class PatientController < ApplicationController
      count =0 
      @data_got = nil
      @data_got = Order.generic
+     patient_name =""
+     patient_id = ""
 
      @data_got.each do |row|
         rs = row['sample_type']
         next if facility_name != row['order_location']
         next if row['status'] != 'Drawn' || !rs.include?(params[:selected_sample])
-        @data[count] = row['_id'] + "-"+ row['sample_type']
+        patient_name =  row['patient']['first_name'] + " " + row['patient']['last_name']
+         patient_id =  row['patient']['national_patient_id']
+        @data[count] = row['_id'] +"(" + patient_id +"-" + patient_name +")"
         count +=1
      end
 
@@ -48,15 +52,26 @@ class PatientController < ApplicationController
      configs = YAML.load_file "#{Rails.root}/config/application.yml"   
      un_orders =  params[:undispatched_orders]
      track_number = ""
-     dis_name = params[:dispatcher]
-     date_dis = params[:date_dispatched]       
+     id = params[:id]
+     f_name = params[:f_name]
+     l_name = params[:l_name]
+     phone = params[:phone]
+
+
+     date_dis = params[:date_dispatched]    
+
 
       un_orders.each do |r|
-        track_number = r.split('-')
+        track_number = r.split('(')
           son = { :return_path => "http://#{request.host}:#{request.port}",
-             :tracking_number => track_number[0],
+             :_id => track_number[0],
              :date_dispatched => date_dis,
-             :dispatcher => dis_name,
+             :who_dispatched => {
+                              :id_number => id,
+                              :first_name => f_name,
+                              :last_name => l_name,
+                              :phone_number => phone
+                              },
              :return_json => 'true'
                }
          url = "#{configs['central_repo']}/pass_json/"
@@ -122,7 +137,7 @@ class PatientController < ApplicationController
       }
 
      @tests =  @tests.reverse[0 .. 10]
-    render :layout => false
+     render :layout => false
   end
 
   def new_lab_results
@@ -147,7 +162,7 @@ class PatientController < ApplicationController
     specimen_type = CGI.unescapeHTML(params[:specimen_type])
 	
     test_types =  params[:test_types]
-	
+
 
     configs = YAML.load_file "#{Rails.root}/config/application.yml"
     bart2_address = configs['bart2_address'] + "/people/remote_demographics"

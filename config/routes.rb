@@ -19,6 +19,7 @@ Rails.application.routes.draw do
   post 'patient/postDispatcher'
   get '/load_orders' => 'patient#load_orders'
   post '/load_orders' => 'patient#load_orders'
+  
 
   # Example of regular route:
   #   get 'products/:id' => 'catalog#view'
