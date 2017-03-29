@@ -44,7 +44,9 @@
                 :helpText => "Order dispatching",
                 :multiple =>  true,
                 :id => "specimen",
-                :tt_pageStyleClass => "longSelectList"
+                :tt_pageStyleClass => "longSelectList",
+                :doublepane => true
+             
       }%>
     <%= submit_tag value="Submit"%>
   </form>
@@ -57,6 +59,8 @@
         var value = __$("touchscreenInput"+tstCurrentPage).value;
         __$("specimen").setAttribute("ajaxURL","/load_orders?selected_sample="+value);
      }
+
+
    </script>
 
 
