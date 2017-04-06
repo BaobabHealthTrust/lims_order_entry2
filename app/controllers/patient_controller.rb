@@ -58,6 +58,7 @@ class PatientController < ApplicationController
      phone = params[:phone]
      date_dis = params[:date_dispatched]    
 
+   
       un_orders.each do |r|
         track_number = r.split('(')
 
