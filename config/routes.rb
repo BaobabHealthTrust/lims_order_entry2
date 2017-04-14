@@ -18,6 +18,8 @@ Rails.application.routes.draw do
   get  'patient/captureDispatcher'
   post 'patient/postDispatcher'
   get '/load_orders' => 'patient#load_orders'
+  post 'patient/dispatchingSummary'
+  get 'patient/dispatchingSummary'
   post '/load_orders' => 'patient#load_orders'
   
 

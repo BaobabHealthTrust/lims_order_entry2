@@ -44,12 +44,14 @@
                 :helpText => "Order dispatching",
                 :multiple =>  true,
                 :id => "specimen",
-                :tt_pageStyleClass => "longSelectList"
+                :tt_pageStyleClass => "longSelectList", 
+                :doublepane => true             
+             
       }%>
     <%= submit_tag value="Submit"%>
   </form>
 
-   <script type="text/javascript">
+  <script type="text/javascript">
     tt_cancel_destination ="barcode";
 
      function setUrl(){
@@ -57,6 +59,8 @@
         var value = __$("touchscreenInput"+tstCurrentPage).value;
         __$("specimen").setAttribute("ajaxURL","/load_orders?selected_sample="+value);
      }
-   </script>
+
+
+  </script>
 
 

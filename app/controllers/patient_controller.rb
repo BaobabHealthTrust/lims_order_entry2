@@ -31,6 +31,17 @@ class PatientController < ApplicationController
                
      }
 
+     @data_got.each do |row|
+        rs = row['sample_type']
+        next if facility_name != row['sending_facility']
+        next if row['status'] != 'Drawn' || !rs.include?(params[:selected_sample])
+        patient_name =  row['patient']['first_name'] + " " + row['patient']['last_name']
+         patient_id =  row['patient']['national_patient_id']
+        @data[count] = row['_id'] +"(" + patient_id +"-" + patient_name +")"
+        count +=1
+     end
+
+
      render :text => @data.collect{|name| "<li>#{name}"}.join("</li>")+"</li>"
   end
 
@@ -44,10 +55,13 @@ class PatientController < ApplicationController
      f_name = params[:f_name]
      l_name = params[:l_name]
      phone = params[:phone]
-     
+    
      date_dis = params[:date_dispatched]    
+     date_dis = params[:date_dispatched]    
+
       un_orders.each do |r|
         track_number = r.split('(')
+
           son = { :return_path => "http://#{request.host}:#{request.port}",
              :_id => track_number[0],
              :date_dispatched => date_dis,
