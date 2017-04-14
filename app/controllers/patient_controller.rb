@@ -31,15 +31,6 @@ class PatientController < ApplicationController
                
      }
 
-     @data_got.each do |row|
-        rs = row['sample_type']
-        next if facility_name != row['sending_facility']
-        next if row['status'] != 'Drawn' || !rs.include?(params[:selected_sample])
-        patient_name =  row['patient']['first_name'] + " " + row['patient']['last_name']
-         patient_id =  row['patient']['national_patient_id']
-        @data[count] = row['_id'] +"(" + patient_id +"-" + patient_name +")"
-        count +=1
-     end
 
 
      render :text => @data.collect{|name| "<li>#{name}"}.join("</li>")+"</li>"
