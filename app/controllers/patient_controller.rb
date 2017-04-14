@@ -22,13 +22,15 @@ class PatientController < ApplicationController
      @data_got = nil
      patient_name =""
      patient_id = ""
+     order_keys = []
 
      da = Order.by_sample_type_order.key(params[:selected_sample])
      
      da.rows.each {|ro|
+            order_keys = ro.value.keys
+            next if order_keys.include?('who_dispatched')
             @data[count] = ro.value['_id'] + "("  + ro.value['patient']['first_name'] +"_"+ ro.value['patient']['last_name']+ ")" rescue nil
-            count = count + 1
-               
+            count = count + 1               
      }
 
 
