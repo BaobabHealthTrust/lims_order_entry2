@@ -4,22 +4,13 @@ class PatientController < ApplicationController
   end
 
   def captureDispatcher
-      load_order_samples()
-  end
-  
-  def load_order_samples
-   @samples = nil
-   @samples = Order.generic
-   @got_samples= [""]
-   counter =0
-    #getting samples 
-      @samples.each do |row|
-        rs = row['sample_type']
-        rs.strip
-        next if @got_samples.include?(rs)
-          @got_samples[counter] =  rs
-        counter +=1
-      end       
+    @samples = Order.by_sample.reduce.group_level(1)
+    @specimen = []
+    count = 0
+      @samples.rows.each do |row|
+        @specimen[count]  = row.key
+        count = count + 1 
+      end
   end
 
   def load_orders
@@ -29,19 +20,16 @@ class PatientController < ApplicationController
      @data = []
      count =0 
      @data_got = nil
-     @data_got = Order.generic
      patient_name =""
      patient_id = ""
 
-     @data_got.each do |row|
-        rs = row['sample_type']
-        next if facility_name != row['order_location']
-        next if row['status'] != 'Drawn' || !rs.include?(params[:selected_sample])
-        patient_name =  row['patient']['first_name'] + " " + row['patient']['last_name']
-         patient_id =  row['patient']['national_patient_id']
-        @data[count] = row['_id'] +"(" + patient_id +"-" + patient_name +")"
-        count +=1
-     end
+     da = Order.by_sample_type_order.key(params[:selected_sample])
+     
+     da.rows.each {|ro|
+            @data[count] = ro.value['_id'] + "("  + ro.value['patient']['first_name'] +"_"+ ro.value['patient']['last_name']+ ")" rescue nil
+            count = count + 1
+               
+     }
 
      render :text => @data.collect{|name| "<li>#{name}"}.join("</li>")+"</li>"
   end
@@ -50,17 +38,14 @@ class PatientController < ApplicationController
   def postDispatcher
 
      configs = YAML.load_file "#{Rails.root}/config/application.yml"   
-     un_orders =  params[:undispatched_orders]
+     un_orders =  params[:undispatched_orders] rescue nil
      track_number = ""
      id = params[:id]
      f_name = params[:f_name]
      l_name = params[:l_name]
      phone = params[:phone]
-
-
+     
      date_dis = params[:date_dispatched]    
-
-
       un_orders.each do |r|
         track_number = r.split('(')
           son = { :return_path => "http://#{request.host}:#{request.port}",
@@ -166,7 +151,7 @@ class PatientController < ApplicationController
 
     configs = YAML.load_file "#{Rails.root}/config/application.yml"
     bart2_address = configs['bart2_address'] + "/people/remote_demographics"
-
+    art_start_date_url = configs['bart2_address'] + "/render_date_enrolled_in_art"
     data = JSON.parse(RestClient.post(bart2_address, :content_type => "application/json", :person => {"value" => params["identifier"]}))['person'] rescue nil
 
     redirect_to "/patient/barcode" and return if data.blank?
@@ -176,6 +161,8 @@ class PatientController < ApplicationController
     gender = data['gender']
     dob = "#{data['birth_day']}/#{data['birth_month']}/#{data['birth_year']}".to_date.strftime("%a %b %d %Y") rescue nil
     attributes = data['attributes']
+   
+    art_start_date = RestClient.post(art_start_date_url,:identifier => national_id.to_s,:content_type =>'application/text')
 
     json = { :return_path => "http://#{request.host}:#{request.port}",
              :district => configs['district'],
@@ -201,7 +188,7 @@ class PatientController < ApplicationController
              :sample_priority=> params[:priority] || 'Routine',
              :target_lab=> configs['receiving_facility'],
              :tracking_number => "",
-             :art_start_date => ("" rescue nil),
+             :art_start_date => (art_start_date rescue nil),
              :date_dispatched => "",
              :date_received => Time.now,
              :return_json => 'true'

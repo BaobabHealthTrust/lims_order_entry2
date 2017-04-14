@@ -124,6 +124,28 @@ class Order < CouchRest::Model::Base
                        }
                     }
                 }"
+
+
+    view :by_sample, 
+         :map => "function(doc) {                    
+                    if (doc['_id'].match(/^X/)) {                    
+                      emit(doc['sample_type']);                             
+                    }
+                }",
+          :reduce => "function(keys,values){
+                        return true;
+                }",
+          :group => "function(keys,values){
+                  return true;
+              }"
+
+    view :by_sample_type_order,
+         :map => "function(doc) {
+                    if (doc['_id'].match(/^X/)) {
+                      emit(doc['sample_type'],doc);
+                    }
+                }"
+
   end
 
 end
