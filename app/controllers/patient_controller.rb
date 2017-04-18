@@ -188,7 +188,7 @@ class PatientController < ApplicationController
              :phone_number=> (attributes['cell_phone_number'] ||
                  attributes['home_phone_number'] ||
                  attributes['office_phone_number']),
-             :reason_for_test=> 'Routine',
+             :reason_for_test=> (test_types.include?("EID") ? 'HIV Exposed Infant' : 'Routine'),
              :sample_collector_last_name=> (session[:user].strip.split(/\s+/)[1] rescue nil),
              :sample_collector_first_name=> (session[:user].strip.split(/\s+/)[0] rescue nil),
              :sample_collector_phone_number=> '',
