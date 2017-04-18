@@ -27,16 +27,16 @@
       {
                   :field_type => 'date',
                   :helpText => "dispatching Date",
-                  :value => Date.today,
-                  :tt_pageStyleClass => "NoKeyboard"
+                  :value => Date.today
       }%>
 
-      <%= select_tag 'selected_sample', options_for_select(@got_samples),
+      <%= select_tag 'selected_sample', options_for_select(@specimen),
       {           :helpText => 'Select Sample Type',
                   :id => "specimen_type",
                   :multiple =>  false,
                   :tt_pageStyleClass => "longSelectList",
-                  :tt_onUnLoad=>"setUrl()"              
+                  :tt_onUnLoad=>"setUrl()",
+                  :tt_pageStyleClass => "NoKeyboard"              
       }%>
 
       <%= select_tag "undispatched_orders[]",nil,
@@ -45,7 +45,7 @@
                 :multiple =>  true,
                 :id => "specimen",
                 :tt_pageStyleClass => "longSelectList", 
-                :doublepane => true             
+                       
              
       }%>
     <%= submit_tag value="Submit"%>
