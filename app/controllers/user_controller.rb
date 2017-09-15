@@ -35,4 +35,22 @@ class UserController < ApplicationController
 
     redirect_to "/patient/barcode"
   end
+
+  def ext
+    if params['username'] && params['name'] && params['location'] && params['tk']
+      session[:user] = params["name"]
+      session[:location] = params["location"]
+      session[:return_path] = params["return_path"]
+      session['token'] = params['tk']
+
+      case params['intent']
+        when 'new_order'
+          redirect_to "/patient/new_lab_results?identifier=#{params['identifier']}" and return
+        when 'lab_trail'
+          redirect_to "/patient/show?identifier=#{params['identifier']}" and return
+      end
+
+      redirect_to params['return_path']
+    end
+  end
 end

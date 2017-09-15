@@ -1,5 +1,11 @@
 class PatientController < ApplicationController
   def barcode
+    if session[:return_path].present?
+      path = session[:return_path]
+      reset_session
+      redirect_to path and return
+    end
+
     render :layout => false
   end
 
@@ -32,8 +38,6 @@ class PatientController < ApplicationController
             @data[count] = ro.value['_id'] + "("  + ro.value['patient']['first_name'] +"_"+ ro.value['patient']['last_name']+ ")" rescue nil
             count = count + 1               
      }
-
-
 
      render :text => @data.collect{|name| "<li>#{name}"}.join("</li>")+"</li>"
   end

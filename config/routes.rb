@@ -12,6 +12,7 @@ Rails.application.routes.draw do
   get 'patient/print_tracking_number'
   get 'patient/show'
   get 'user/logout'
+  get 'user/ext'
   get 'user/login'
   post 'user/login'
   post 'user/do_login'

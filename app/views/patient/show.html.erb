@@ -148,7 +148,7 @@
                 <div id = 'headdiv' style="color: darkslategray">
                     <div id="details" >
                         <span class="identifier" style="text-decoration: underline"><%= @national_id %></span><br/>
-                        <span class="label" style="padding-right:80px">Name</span> : <%= @name["given_name"] rescue "" + ' ' + @name["family_name"] rescue "" %> (<%= @gender rescue ""%>)<br />
+                        <span class="label" style="padding-right:80px">Name</span> : <%= ((@name["given_name"] rescue "") + ' ' + (@name["family_name"] rescue "")) %> (<%= @gender rescue ""%>)<br />
                         <span class="label" style="padding-right:47px">Residence</span>: <%= @address["city_village"] rescue ""%><br />
                         <span class="label" style="padding-right:92px">Age</span> : <%= @age rescue "" %> 
                     </div>
