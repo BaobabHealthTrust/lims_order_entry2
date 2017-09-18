@@ -33,6 +33,10 @@
                 window.location = "/patient/print_tracking_number?tracking_number=" + trackingNumber;
             }
             function viewResults(node){
+                if (node.className.match('gry')){
+                    return
+                }
+
                 var data = JSON.parse(node.getAttribute('data'));
                 var rawData = JSON.parse(node.getAttribute('raw-data'));
                 showShield();
@@ -44,8 +48,7 @@
 
                 var tempRows = document.getElementsByClassName('temp-row');
                 for(var i = 0; i < tempRows.length; i ++){
-                    jQuery(tempRows[i]).empty();
-                    table.removeChild(tempRows[i]);
+                    tempRows[i].parentNode.removeChild(tempRows[i]);
                 }
 
                 for(var j = 0; j < data.length; j ++){
@@ -89,6 +92,13 @@
             function removeData(){
                 __$('shield').style.display = 'none';
                 __$('data').style.display = 'none';
+
+                var table = __$('data-table');
+                var tempRows = document.getElementsByClassName('temp-row');
+                console.log(tempRows)
+                for(var i = 0; i < tempRows.length; i ++){
+                    tempRows[i].parentNode.removeChild(tempRows[i]);
+                }
             }
 
 
