@@ -32,6 +32,65 @@
             function RePrint(trackingNumber){
                 window.location = "/patient/print_tracking_number?tracking_number=" + trackingNumber;
             }
+            function viewResults(node){
+                var data = JSON.parse(node.getAttribute('data'));
+                var rawData = JSON.parse(node.getAttribute('raw-data'));
+                showShield();
+                var table = __$('data-table');
+                __$('header').innerHTML = "<span style='float: right;margin-right: 50px;'>Tracking Number: &nbsp" + rawData['tracking_number'] + "</span>" +
+                        "<span style='float: left;margin-left: 50px;'>Sample Type: &nbsp" + rawData['sample_type'] + "</span>";
+                __$('test_types').innerHTML = rawData['test_types'].join(', ')
+                __$('date_of_sample').innerHTML = rawData['date_ordered'];
+
+                var tempRows = document.getElementsByClassName('temp-row');
+                for(var i = 0; i < tempRows.length; i ++){
+                    jQuery(tempRows[i]).empty();
+                    table.removeChild(tempRows[i]);
+                }
+
+                for(var j = 0; j < data.length; j ++){
+                    for (var t in data[j]){
+                        var measures = Object.keys(data[j][t]);
+                        var row = document.createElement('tr');
+                        row.className = 'temp-row'
+                        var td = document.createElement('td');
+                        td.colSpan = '2';
+                        td.innerHTML = t;
+                        td.style.paddingTop = '15px';
+                        td.style.fontWeight = 'bold';
+                        td.style.background = 'ghostwhite';
+
+                        row.appendChild(td);
+                        table.appendChild(row);
+                        var results = data[j][t]['results'];
+
+                        for(var key in results){
+                            var row = document.createElement('tr');
+                            row.className = 'temp-row';
+                            table.appendChild(row);
+                            var label = document.createElement('td');
+                            label.innerHTML = key;
+                            row.appendChild(label);
+
+                            var value = document.createElement('td');
+                            value.innerHTML = results[key];
+                            row.appendChild(value);
+                        }
+                    }
+                }
+
+            }
+
+            function showShield(){
+                __$('shield').style.display = 'block';
+                __$('data').style.display = 'block';
+            }
+
+            function removeData(){
+                __$('shield').style.display = 'none';
+                __$('data').style.display = 'none';
+            }
+
 
         </script>
 
@@ -112,10 +171,10 @@
                 border-width: 2px 0px 2px 0px;
                 border-style: solid;
                 height: 500px;
-                padding-left: 5.5%;
+                padding-left: 2%;
                 padding-top: 20px;
                 padding-right: 5px;
-                width: 93%;
+                width: 97%;
                 margin: auto;
             }
 
@@ -126,9 +185,6 @@
             #myModal button{
                 border: 3px outset #000;
                 min-width: 96px
-            }
-            .close, .close:hover{
-                background: initial;
             }
 
             hr {
@@ -141,6 +197,15 @@
             #newResultsButton{
                 float: left;
             }
+            .gry, .gry:hover{
+                background: #d3d3d3;
+                cursor: auto;
+            }
+            #data td{
+                border: 1px solid #d3d3d3;
+                padding-left: 10px;
+            }
+
         </style>
 
         </head>
@@ -163,20 +228,29 @@
                                     <th style="padding: 8px;max-width: 40px;background: darkslategray; text-align: center ">Sample Type</th>
                                     <th style="text-align: center;background: darkslategray;">Test(s) Ordered</th>
                                     <th style="text-align: center;background: darkslategray">Order Date</th>
-                                    <th style="text-align: center;background: darkslategray">Order Time</th>
+                                    <th>&nbsp;</th>
                                     <th>&nbsp;</th>
                                 </tr>
                             </thead>
                             <tbody>
-                                <% @tests.each {|test| %>
+                                <% @tests.each {|test|
+                                   results = test['results'].collect{|r|
+                                     r.values.last['results'] if ['verified', 'reviewed'].include?(r.values.last['test_status'])}.compact
+                                   results_available = !results.reject{|x| x.empty?}.blank?
+                                   clas = ' gry ' if !results_available
+                                %>
                                 <tr>
                                     <td style="text-align: center; border-bottom: 1px solid black;"><%=  test['tracking_number']%></td>
                                     <td style="text-align: center; border-bottom: 1px solid black;"><%= test['sample_type']%></td>
                                     <td style="text-align: center; border-bottom: 1px solid black;"><%= test['test_types'].join(', ')%></td>
-                                    <td style="text-align: center; border-bottom: 1px solid black;"><%= test['date_ordered'] %></td>
-                                    <td style="text-align: center; border-bottom: 1px solid black;"><%= test['time_ordered'] %></td>
-                                    <td>
-                                      <button class="btn btn-primary" style="padding: 12px;margin: 0px;min-width: 150px;" onmousedown="RePrint('<%= test['tracking_number']%>')">Re-print</button>
+                                    <td style="text-align: center; border-bottom: 1px solid black;"><%= "#{test['date_ordered']}".html_safe %></td>
+                                    <td style="width: 70px;">
+                                      <button class="btn btn-primary" style="padding: 9px;margin: 3px;min-width: 70px;"
+                                              onmousedown="RePrint('<%= test['tracking_number']%>')">Re-print</button>
+                                    </td>
+                                    <td style="width: 70px;">
+                                    <button class="btn <%= clas%> btn-primary" style="padding: 9px;margin: 3px;min-width: 70px;"
+                                            raw-data="<%= test.to_json%>" data="<%= test['results'].to_json%>" onmousedown="viewResults(this)">Results</button>
                                     </td>
                                 </tr>
                                 <% } %>
@@ -195,6 +269,24 @@
                         window.location = '/patient/new_lab_results?identifier=<%= params[:identifier]%>';"><span>Order Tests</span></button>
                     </div>
                     <div id="tt_extraButtons"/>
+                </div>
+
+
+                <div id="shield" style="display: none;position:absolute;top:0px; left: 0px; height: 100vh;width:100%;background:black;opacity: 0.06;z-index:1500;"
+                onclick="removeData()"></div>
+                <div id="data" style="display:none;position:absolute;top: 10%; left: 25%;width: 50%;min-height: 250px;
+                        background: white;z-index: 2000;border: 1px solid lightgray;max-height: 420px;overflow: auto;">
+                    <table style="width: 100%;color: darkslategray" id="data-table">
+                      <caption style="width: 100%;font-weight: bold; padding-top: 10px;padding-bottom: 8px;background: darkslategray;color: white;" id="header"></caption>
+                      <tr>
+                        <td>Test Type(s)</td>
+                        <td id="test_types"></td>
+                      </tr>
+                      <tr>
+                        <td>Date of Sample</td>
+                        <td id="date_of_sample"></td>
+                      </tr>
+                    </table>
                 </div>
         <script>
 

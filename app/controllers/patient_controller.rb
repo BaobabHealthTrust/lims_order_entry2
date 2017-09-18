@@ -100,8 +100,9 @@ class PatientController < ApplicationController
       @tests << {"tracking_number" => order['_id'],
                  "sample_type" => order['sample_type'],
                  "test_types" => order['test_types'],
-                 "date_ordered" => order['date_time'].to_datetime.strftime("%d/%b/%Y"),
-                 "time_ordered" => order['date_time'].to_datetime.strftime("%H:%M")
+                 "date_ordered" => order['date_time'].to_datetime.strftime("%d-%b-%Y   &nbsp;&nbsp;&nbsp; %H:%M"),
+                 "time_ordered" => order['date_time'].to_datetime.strftime("%H:%M"),
+                 "results" => (order['results'].collect{|test, trails|key = trails.keys.last; {test => trails[key]}} rescue [])
       }
     }
 
