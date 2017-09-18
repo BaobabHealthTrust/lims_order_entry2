@@ -171,7 +171,7 @@ class PatientController < ApplicationController
     national_id = data['patient']['identifiers']['National id']
     name = data['names']
     gender = data['gender']
-    dob = "#{data['birth_day']}/#{data['birth_month']}/#{data['birth_year']}".to_date.strftime("%a %b %d %Y") rescue nil
+    dob = "#{data['birth_day']}/#{data['birth_month']}/#{data['birth_year']}".to_date.strftime("%Y-%m-%d") rescue nil
     attributes = data['attributes']
    
     art_start_date = RestClient.post(art_start_date_url,:identifier => national_id.to_s,:content_type =>'application/text')

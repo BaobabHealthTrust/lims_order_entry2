@@ -25,7 +25,7 @@
             }
 
 						function dashboardPatient(){
-								window.location = "/patient/show?identifier=<%= params[identifier]%>"
+								window.location = "/patient/show?identifier=<%= params[:identifier]%>"
 						}
 
             function showMessage(aMessage, withCancel, timed) {
