@@ -34,7 +34,7 @@
             }
             function viewResults(node){
                 if (node.className.match('gry')){
-                    return
+                    //return
                 }
 
                 var data = JSON.parse(node.getAttribute('data'));
@@ -95,7 +95,6 @@
 
                 var table = __$('data-table');
                 var tempRows = document.getElementsByClassName('temp-row');
-                console.log(tempRows)
                 for(var i = 0; i < tempRows.length; i ++){
                     tempRows[i].parentNode.removeChild(tempRows[i]);
                 }
@@ -245,7 +244,7 @@
                             <tbody>
                                 <% @tests.each {|test|
                                    results = test['results'].collect{|r|
-                                     r.values.last['results'] if ['verified', 'reviewed'].include?(r.values.last['test_status'])}.compact
+                                     r.values.last['results'] if ['verified', 'reviewed'].include?(r.values.last['test_status'].downcase.strip)}.compact
                                    results_available = !results.reject{|x| x.empty?}.blank?
                                    clas = ' gry ' if !results_available
                                 %>
