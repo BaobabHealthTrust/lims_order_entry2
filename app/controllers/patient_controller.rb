@@ -82,14 +82,13 @@ class PatientController < ApplicationController
     bart2_address = configs['bart2_address'] + "/people/remote_demographics"
 
     @data = JSON.parse(RestClient.post(bart2_address, :content_type => "application/json", :person => {"value" => params["identifier"]}))['person'] rescue nil
-
     redirect_to "/patient/barcode" and return if @data.blank?
 
     @national_id = @data['patient']['identifiers']['National id']
     @name = @data['names']
     @address = @data['addresses']
     @gender = @data['gender']
-    @dob = "#{@data['birth_day']}/#{@data['birth_month']}/#{@data['birth_year']}".to_date rescue nil
+    @dob = @data['birthdate'].to_date rescue nil
     @age = age(@dob)
 
     startkey = "#{@national_id.strip}_10000000000000"
@@ -171,7 +170,7 @@ class PatientController < ApplicationController
     national_id = data['patient']['identifiers']['National id']
     name = data['names']
     gender = data['gender']
-    dob = "#{data['birth_day']}/#{data['birth_month']}/#{data['birth_year']}".to_date.strftime("%Y-%m-%d") rescue nil
+    dob = data['birthdate'].to_date.strftime("%Y-%m-%d") rescue nil
     attributes = data['attributes']
    
     art_start_date = RestClient.post(art_start_date_url,:identifier => national_id.to_s,:content_type =>'application/text')
