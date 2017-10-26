@@ -51,6 +51,9 @@ class UserController < ApplicationController
       end
 
       redirect_to params['return_path']
+     else
+      session[:token]  = "hello"
+      redirect_to "/undispatched_samples" and return
     end
   end
 end

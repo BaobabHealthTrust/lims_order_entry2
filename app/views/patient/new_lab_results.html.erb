@@ -45,6 +45,8 @@
                :multiple =>  true,
                :tt_pageStyleClass => "longSelectList"
 %>
+<%= select_tag "target_lab", options_for_select(['KCH','ZCH','MCH','QCH']), 
+    {:helpText => "Target Lab"}%><br>
 
 <%= select_tag "priority", options_for_select(['', 'Routine', 'Stat']),
                {:helpText => 'Specify Priority',
