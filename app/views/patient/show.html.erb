@@ -33,54 +33,118 @@
                 window.location = "/patient/print_tracking_number?tracking_number=" + trackingNumber;
             }
             function viewResults(node){
+
                 if (node.className.match('gry')){
                     //return
                 }
 
                 var data = JSON.parse(node.getAttribute('data'));
+
                 var rawData = JSON.parse(node.getAttribute('raw-data'));
-                showShield();
-                var table = __$('data-table');
-                __$('header').innerHTML = "<span style='float: right;margin-right: 50px;'>Tracking Number: &nbsp" + rawData['tracking_number'] + "</span>" +
-                        "<span style='float: left;margin-left: 50px;'>Sample Type: &nbsp" + rawData['sample_type'] + "</span>";
-                __$('test_types').innerHTML = rawData['test_types'].join(', ')
-                __$('date_of_sample').innerHTML = rawData['date_ordered'];
+                var nl = JSON.parse(node.getAttribute('nl'));
+               
 
-                var tempRows = document.getElementsByClassName('temp-row');
-                for(var i = 0; i < tempRows.length; i ++){
-                    tempRows[i].parentNode.removeChild(tempRows[i]);
+                if (nl == true)
+                { 
+                     showShield();
+                    var table = __$('data-table');
+                    __$('header').innerHTML = "<span style='float: right;margin-right: 50px;'>Tracking Number: &nbsp" + rawData['tracking_number'] + "</span>" +
+                        "<span style='float: left;margin-left: 50px;'>Sample Type: &nbsp" + rawData['specimen_type'] + "</span>"; 
+                    __$('test_types').innerHTML = rawData['tests'].join(', ')
+                    __$('date_of_sample').innerHTML = rawData['date_created'];
+
+                   
+
+                    var tempRows = document.getElementsByClassName('temp-row');
+                    for(var i = 0; i < tempRows.length; i ++){
+                        tempRows[i].parentNode.removeChild(tempRows[i]);
+                    }   
+
+                  
+
+                    for(var j = 0; j < Object.keys(data).length; j ++){
+                            
+                                var test = Object.keys(data)[j];
+                                var measure = Object.keys(data[test]);
+                                var result = data[test][measure];
+                              
+
+                                var row = document.createElement('tr');
+                                row.className = 'temp-row'
+                                var td = document.createElement('td');
+                                td.colSpan = '2';
+                                td.innerHTML = test;
+                                td.style.paddingTop = '15px';
+                                td.style.fontWeight = 'bold';
+                                td.style.background = 'ghostwhite';
+
+                                row.appendChild(td);
+                                table.appendChild(row);
+                                
+
+                                    var row = document.createElement('tr');
+                                    row.className = 'temp-row';
+                                    table.appendChild(row);
+                                    var label = document.createElement('td');
+                                    label.innerHTML =  measure;
+                                    row.appendChild(label);
+
+                                    var value = document.createElement('td');
+                                    value.innerHTML = result;
+                                    row.appendChild(value);
+                                   
+                                
+                            
+                    }
+
+
+
                 }
+                else {
 
-                for(var j = 0; j < data.length; j ++){
-                    for (var t in data[j]){
-                        var measures = Object.keys(data[j][t]);
-                        var row = document.createElement('tr');
-                        row.className = 'temp-row'
-                        var td = document.createElement('td');
-                        td.colSpan = '2';
-                        td.innerHTML = t;
-                        td.style.paddingTop = '15px';
-                        td.style.fontWeight = 'bold';
-                        td.style.background = 'ghostwhite';
+                        showShield();
+                        var table = __$('data-table');
+                        __$('header').innerHTML = "<span style='float: right;margin-right: 50px;'>Tracking Number: &nbsp" + rawData['tracking_number'] + "</span>" +
+                                "<span style='float: left;margin-left: 50px;'>Sample Type: &nbsp" + rawData['sample_type'] + "</span>";
+                        __$('test_types').innerHTML = rawData['test_types'].join(', ')
+                        __$('date_of_sample').innerHTML = rawData['date_ordered'];
 
-                        row.appendChild(td);
-                        table.appendChild(row);
-                        var results = data[j][t]['results'];
+                        var tempRows = document.getElementsByClassName('temp-row');
+                        for(var i = 0; i < tempRows.length; i ++){
+                            tempRows[i].parentNode.removeChild(tempRows[i]);
+                        }
 
-                        for(var key in results){
-                            var row = document.createElement('tr');
-                            row.className = 'temp-row';
-                            table.appendChild(row);
-                            var label = document.createElement('td');
-                            label.innerHTML = key;
-                            row.appendChild(label);
+                        for(var j = 0; j < data.length; j ++){
+                            for (var t in data[j]){
+                                var measures = Object.keys(data[j][t]);
+                                var row = document.createElement('tr');
+                                row.className = 'temp-row'
+                                var td = document.createElement('td');
+                                td.colSpan = '2';
+                                td.innerHTML = t;
+                                td.style.paddingTop = '15px';
+                                td.style.fontWeight = 'bold';
+                                td.style.background = 'ghostwhite';
 
-                            var value = document.createElement('td');
-                            value.innerHTML = results[key];
-                            row.appendChild(value);
+                                row.appendChild(td);
+                                table.appendChild(row);
+                                var results = data[j][t]['results'];
+
+                                for(var key in results){
+                                    var row = document.createElement('tr');
+                                    row.className = 'temp-row';
+                                    table.appendChild(row);
+                                    var label = document.createElement('td');
+                                    label.innerHTML = key;
+                                    row.appendChild(label);
+
+                                    var value = document.createElement('td');
+                                    value.innerHTML = results[key];
+                                    row.appendChild(value);
+                                }
+                            }
                         }
                     }
-                }
 
             }
 
@@ -242,27 +306,56 @@
                                 </tr>
                             </thead>
                             <tbody>
-                                <% @tests.each {|test|
-                                   results = test['results'].collect{|r|
-                                     r.values.last['results'] if ['verified', 'reviewed'].include?(r.values.last['test_status'].downcase.strip)}.compact
-                                   results_available = !results.reject{|x| x.empty?}.blank?
-                                   clas = ' gry ' if !results_available
-                                %>
-                                <tr>
-                                    <td style="text-align: center; border-bottom: 1px solid black;"><%=  test['tracking_number']%></td>
-                                    <td style="text-align: center; border-bottom: 1px solid black;"><%= test['sample_type']%></td>
-                                    <td style="text-align: center; border-bottom: 1px solid black;"><%= test['test_types'].join(', ')%></td>
-                                    <td style="text-align: center; border-bottom: 1px solid black;"><%= "#{test['date_ordered']}".html_safe %></td>
-                                    <td style="width: 70px;">
-                                      <button class="btn btn-primary" style="padding: 9px;margin: 3px;min-width: 70px;"
-                                              onmousedown="RePrint('<%= test['tracking_number']%>')">Re-print</button>
-                                    </td>
-                                    <td style="width: 70px;">
-                                    <button class="btn <%= clas%> btn-primary" style="padding: 9px;margin: 3px;min-width: 70px;"
-                                            raw-data="<%= test.to_json%>" data="<%= test['results'].to_json%>" onmousedown="viewResults(this)">Results</button>
-                                    </td>
-                                </tr>
-                                <% } %>
+                              
+                                <% if @nlims_controller == true %>
+                                
+                                    <% @tests.each {|test|
+                                        results_available = @results[test['tracking_number']] 
+                                        ava_results = results_available if results_available
+                                        clas = ' gry ' if !results_available
+
+                                    %>
+                                        <tr>
+                                            <td style="text-align: center; border-bottom: 1px solid black;"><%=  test['tracking_number']%></td>
+                                            <td style="text-align: center; border-bottom: 1px solid black;"><%= test['specimen_type']%></td>
+                                            <td style="text-align: center; border-bottom: 1px solid black;"><%= test['tests'].join(', ')%></td>
+                                            <td style="text-align: center; border-bottom: 1px solid black;"><%= "#{test['date_created']}".html_safe %></td>
+                                            <td style="width: 70px;">
+                                              <button class="btn btn-primary" style="padding: 9px;margin: 3px;min-width: 70px;"
+                                                      onmousedown="RePrint('<%= test['tracking_number']%>')">Re-print</button>
+                                            </td>
+                                            <td style="width: 70px;">
+                                                <button class="btn <%= clas%> btn-primary" style="padding: 9px;margin: 3px;min-width: 70px;"
+                                                    raw-data="<%=  test.to_json %>" nl="true" data="<%= ava_results.to_json %>" onmousedown="viewResults(this)">Results</button>
+                                            </td>                                    
+                                        </tr>
+                                    <% } %>
+
+                                <% else %>
+
+                                    <% @tests.each {|test|
+                                       results = test['results'].collect{|r|
+                                         r.values.last['results'] if ['verified', 'reviewed'].include?(r.values.last['test_status'].downcase.strip)}.compact
+                                       results_available = !results.reject{|x| x.empty?}.blank?
+                                       clas = ' gry ' if !results_available
+                                    %>
+                                    <tr>
+                                        <td style="text-align: center; border-bottom: 1px solid black;"><%=  test['tracking_number']%></td>
+                                        <td style="text-align: center; border-bottom: 1px solid black;"><%= test['sample_type']%></td>
+                                        <td style="text-align: center; border-bottom: 1px solid black;"><%= test['test_types'].join(', ')%></td>
+                                        <td style="text-align: center; border-bottom: 1px solid black;"><%= "#{test['date_ordered']}".html_safe %></td>
+                                        <td style="width: 70px;">
+                                          <button class="btn btn-primary" style="padding: 9px;margin: 3px;min-width: 70px;"
+                                                  onmousedown="RePrint('<%= test['tracking_number']%>')">Re-print</button>
+                                        </td>
+                                        <td style="width: 70px;">
+                                        <button class="btn <%= clas%> btn-primary" style="padding: 9px;margin: 3px;min-width: 70px;"
+                                                raw-data="<%= test.to_json%>" data="<%= test['results'].to_json%>" onmousedown="viewResults(this)">Results</button>
+                                        </td>
+                                    </tr>
+                                    <% } %>
+
+                                <% end %>
                             </tbody>
 
                         </table>

@@ -91,21 +91,51 @@ class PatientController < ApplicationController
     @dob = @data['birthdate'].to_date rescue nil
     @age = age(@dob)
 
-    startkey = "#{@national_id.strip}_10000000000000"
-    endkey = "#{@national_id.strip}_#{Time.now.strftime('%Y%m%d%H%M%S')}"
+    if configs['nlims_controller'] == true
+        @nlims_controller = true
+        url = "localhost:3010/api/v1/query_order_by_npid/#{@national_id}/aRBR5edkE2LC"
+        res =  JSON.parse(RestClient.get(url))
+        @results = {}
+        tracking_number = ""
+        test_results = {}
+        
+        if res['error'] == false
 
-    @tests = []
-    Order.by_national_id_and_datetime.startkey([startkey]).endkey([endkey]).each {|order|
-      @tests << {"tracking_number" => order['_id'],
-                 "sample_type" => order['sample_type'],
-                 "test_types" => order['test_types'],
-                 "date_ordered" => order['date_time'].to_datetime.strftime("%d-%b-%Y   &nbsp;&nbsp;&nbsp; %H:%M"),
-                 "time_ordered" => order['date_time'].to_datetime.strftime("%H:%M"),
-                 "results" => (order['results'].collect{|test, trails|key = trails.keys.last; {test => trails[key]}} rescue [])
+          @tests = res['data']['orders']
+
+          @tests.each do |t|
+   
+            tracking_number = t['tracking_number']
+            url = "localhost:3010/api/v1/query_results_by_tracking_number/#{tracking_number}/aRBR5edkE2LC"
+            res =  JSON.parse(RestClient.get(url))
+            if res['error'] == true
+            else            
+              @results[tracking_number] = res['data']['results']
+            end
+          end      
+        else
+          
+        end
+
+    else
+
+      startkey = "#{@national_id.strip}_10000000000000"
+      endkey = "#{@national_id.strip}_#{Time.now.strftime('%Y%m%d%H%M%S')}"
+
+      @tests = []
+      Order.by_national_id_and_datetime.startkey([startkey]).endkey([endkey]).each {|order|
+        @tests << {"tracking_number" => order['_id'],
+                   "sample_type" => order['sample_type'],
+                   "test_types" => order['test_types'],
+                   "date_ordered" => order['date_time'].to_datetime.strftime("%d-%b-%Y   &nbsp;&nbsp;&nbsp; %H:%M"),
+                   "time_ordered" => order['date_time'].to_datetime.strftime("%H:%M"),
+                   "results" => (order['results'].collect{|test, trails|key = trails.keys.last; {test => trails[key]}} rescue [])
+        }
       }
-    }
 
-    @tests =  @tests.reverse
+      @tests =  @tests.reverse
+    end
+
 
   end
 
@@ -192,7 +222,7 @@ class PatientController < ApplicationController
              :sample_collector_first_name=> (session[:user].strip.split(/\s+/)[0] rescue nil),
              :sample_collector_phone_number=> '',
              :sample_collector_id=> '',
-             :sample_order_location=> (configs['facility_name'] || session[:location]),
+             :sample_order_location=> 'OPD 2',
              :sample_type=> specimen_type,
              :date_sample_drawn=> Date.today.strftime("%a %b %d %Y"),
              :tests=> test_types,
@@ -202,14 +232,35 @@ class PatientController < ApplicationController
              :art_start_date => (art_start_date rescue nil),
              :date_dispatched => "",
              :date_received => Time.now,
+             :requesting_clinician => 'join doe',
              :return_json => 'true'
     }
 
-    url = "#{configs['national-repo-node']}/create_hl7_order"
+    if configs['nlims_controller'] == true
+      url = "#{configs['nlims_controller_ip']}/api/v1/create_order/aRBR5edkE2LC"
+      paramz = JSON.parse(RestClient.post(url, json))
 
-    paramz = JSON.parse(RestClient.post(url, json))
-    print_url = "/patient/print_tracking_number?tracking_number=#{paramz['tracking_number']}"
-    print_and_redirect(print_url, "/patient/show?identifier=#{national_id}")
+      if paramz['status'] == 401
+
+        raise paramz['message'].inspect
+
+      else
+        tracking_number = paramz['data']['tracking_number']
+        
+        print_url = "/patient/print_tracking_number?tracking_number=#{tracking_number}"
+        print_and_redirect(print_url, "/patient/show?identifier=#{national_id}")
+
+      end
+    else
+
+      url = "#{configs['national-repo-node']}/create_hl7_order"
+      paramz = JSON.parse(RestClient.post(url, json))
+
+      print_url = "/patient/print_tracking_number?tracking_number=#{paramz['tracking_number']}"
+      print_and_redirect(print_url, "/patient/show?identifier=#{national_id}")
+    end
+
+
   end
 
 
@@ -220,34 +271,89 @@ class PatientController < ApplicationController
 
   def print_tracking_number
     require 'auto12epl'
+    configs = YAML.load_file "#{Rails.root}/config/application.yml"
 
-    order = Order.find(params["tracking_number"])
-    patient = order['patient']
-    tname = order['test_types'].join(', ')
+    if configs['nlims_controller'] == true
+        url = "#{configs['nlims_controller_ip']}/api/v1/query_order_by_tracking_number/#{params[:tracking_number]}/aRBR5edkE2LC"
+        res = JSON.parse(RestClient.get(url))
+        tname = []
 
-    middle_initial = patient['middle_name'].strip.scan(/\s\w+\s/).first.strip[0 .. 2] rescue ""
-    dob = patient['date_of_birth'].to_date.strftime("%d-%b-%Y") rescue '-'
+        if res['error'] == false
 
-    age = age(dob, order['date_time']) rescue "-"
 
-    gender = patient['gender']
-    col_datetime = order['date_time'].to_datetime.strftime("%d-%b-%Y %H:%M")
-    col_by = (order['who_order_test']['first_name'] + ' ' + order['who_order_test']['last_name']).strip
-    stat_el = order['priority'].downcase.to_s == "stat" ? "STAT" : nil
-    formatted_acc_num = params["tracking_number"]
-    numerical_acc_num = params['tracking_number']
+          patient = res['data']['other']['patient']
+          other = res['data']['other']
+          tests = res['data']['tests']
 
-    auto = Auto12Epl.new
-    s =  auto.generate_epl(patient['last_name'].to_s, patient['first_name'].to_s, middle_initial.to_s, patient['national_patient_id'], dob, age.to_s,
-                           gender.to_s, col_datetime, col_by.to_s, tname.to_s,
-                           stat_el, formatted_acc_num.to_s, numerical_acc_num)
+            tests.each do |key, value|
+              tname.push(key)
+            end
+            tnam = tname.join(",")
 
-    send_data(s,
-              :type=>"application/label; charset=utf-8",
-              :stream=> false,
-              :filename=>"#{params['tracking_number']}-#{rand(10000)}.lbl",
-              :disposition => "inline"
-    )
+     
+           middle_initial = patient['middle_name'].strip.scan(/\s\w+\s/).first.strip[0 .. 2] rescue ""
+            dob = patient['dob'].to_date.strftime("%d-%b-%Y") rescue '-'
+
+            age = age(dob, other['date_created']) rescue "-"
+
+            gender = patient['gender']
+            col_datetime = other['date_created'].to_datetime.strftime("%d-%b-%Y %H:%M")
+            col_by = other['collector']['name']
+            stat_el = other['priority'].downcase.to_s == "stat" ? "STAT" : nil
+            formatted_acc_num = params["tracking_number"]
+            numerical_acc_num = params['tracking_number']
+            pat_first_name = patient['name'].split(" ")[0]
+            pat_last_name = patient['name'].split(" ")[1]
+          
+
+            auto = Auto12Epl.new
+            s =  auto.generate_epl(pat_first_name.to_s, pat_last_name.to_s, middle_initial.to_s, patient['id'], dob, age.to_s,
+                                   gender.to_s, col_datetime, col_by.to_s, tnam.to_s,
+                                   stat_el, formatted_acc_num.to_s, numerical_acc_num)
+
+            send_data(s,
+                      :type=>"application/label; charset=utf-8",
+                      :stream=> false,
+                      :filename=>"#{params['tracking_number']}-#{rand(10000)}.lbl",
+                      :disposition => "inline"  )
+
+
+
+        else
+          raise "eee".inspect
+        end
+
+    else
+
+      order = Order.find(params["tracking_number"])
+      patient = order['patient']
+      tname = order['test_types'].join(', ')
+
+      middle_initial = patient['middle_name'].strip.scan(/\s\w+\s/).first.strip[0 .. 2] rescue ""
+      dob = patient['date_of_birth'].to_date.strftime("%d-%b-%Y") rescue '-'
+
+      age = age(dob, order['date_time']) rescue "-"
+
+      gender = patient['gender']
+      col_datetime = order['date_time'].to_datetime.strftime("%d-%b-%Y %H:%M")
+      col_by = (order['who_order_test']['first_name'] + ' ' + order['who_order_test']['last_name']).strip
+      stat_el = order['priority'].downcase.to_s == "stat" ? "STAT" : nil
+      formatted_acc_num = params["tracking_number"]
+      numerical_acc_num = params['tracking_number']
+
+      auto = Auto12Epl.new
+      s =  auto.generate_epl(patient['last_name'].to_s, patient['first_name'].to_s, middle_initial.to_s, patient['national_patient_id'], dob, age.to_s,
+                             gender.to_s, col_datetime, col_by.to_s, tname.to_s,
+                             stat_el, formatted_acc_num.to_s, numerical_acc_num)
+
+      send_data(s,
+                :type=>"application/label; charset=utf-8",
+                :stream=> false,
+                :filename=>"#{params['tracking_number']}-#{rand(10000)}.lbl",
+                :disposition => "inline"
+      )
+    end
+
   end
 
 end
