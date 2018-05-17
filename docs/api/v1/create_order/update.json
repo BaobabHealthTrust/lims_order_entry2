@@ -1,0 +1,12 @@
+{
+  "published": true,
+  "name": "Update Create Order",
+  "end_point": "api/v1/create_order/:id.json",
+  "http_method": "PUT|PATCH",
+  "params": [],
+  "header": {},
+  "examples": [{
+    "request": {},
+    "response": {}
+  }]
+}

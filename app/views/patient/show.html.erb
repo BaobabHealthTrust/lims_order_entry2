@@ -29,6 +29,11 @@
                 jQuery('#myModal').modal('show');
             }
 
+            function load_result_page(id){
+                
+                window.location = '/patient/enter_test_result/?tracking_number=' + id;
+            }
+
             function RePrint(trackingNumber){
                 window.location = "/patient/print_tracking_number?tracking_number=" + trackingNumber;
             }
@@ -303,6 +308,8 @@
                                     <th style="text-align: center;background: darkslategray">Order Date</th>
                                     <th>&nbsp;</th>
                                     <th>&nbsp;</th>
+                                    <th>&nbsp;</th>
+
                                 </tr>
                             </thead>
                             <tbody>
@@ -350,8 +357,17 @@
                                         </td>
                                         <td style="width: 70px;">
                                         <button class="btn <%= clas%> btn-primary" style="padding: 9px;margin: 3px;min-width: 70px;"
-                                                raw-data="<%= test.to_json%>" data="<%= test['results'].to_json%>" onmousedown="viewResults(this)">Results</button>
+                                                raw-data="<%= test.to_json%>" data="<%= test['results'].to_json%>" onmousedown="viewResults(this)">View Results</button>
                                         </td>
+                                        <%  if  @direct_result_entry == true %>
+                                            <td style="width: 70px;">
+                                                <button id=<%= test['tracking_number'] +'_'+ @national_id %> class="btn btn-primary" style="padding: 9px;margin: 3px;min-width: 70px;"
+                                                   
+                                                    onmousedown="load_result_page(this.id)">
+                                                        Enter Result
+                                                </button>
+                                            </td>
+                                        <% end %>
                                     </tr>
                                     <% } %>
 

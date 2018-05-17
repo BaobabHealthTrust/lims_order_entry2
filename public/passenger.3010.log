@@ -1,0 +1,38 @@
+[ N 2017-10-03 11:33:37.4239 21643/T1 age/Wat/WatchdogMain.cpp:1283 ]: Starting Passenger watchdog...
+[ N 2017-10-03 11:33:37.4263 21646/T1 age/Cor/CoreMain.cpp:1083 ]: Starting Passenger core...
+[ N 2017-10-03 11:33:37.4264 21646/T1 age/Cor/CoreMain.cpp:248 ]: Passenger core running in multi-application mode.
+[ N 2017-10-03 11:33:37.4426 21646/T1 age/Cor/CoreMain.cpp:830 ]: Passenger core online, PID 21646
+[ N 2017-10-03 11:33:37.4459 21654/T1 age/Ust/UstRouterMain.cpp:537 ]: Starting Passenger UstRouter...
+[ N 2017-10-03 11:33:37.4463 21654/T1 age/Ust/UstRouterMain.cpp:350 ]: Passenger UstRouter online, PID 21654
+2017/10/03 11:33:39 [error] 21683#0: *4 "/var/www/lims_order_entry2/public/public/index.html" is not found (2: No such file or directory), client: 127.0.0.1, server: _, request: "HEAD / HTTP/1.1", host: "0.0.0.0"
+[ N 2017-10-03 11:33:40.6616 21646/T5 age/Cor/SecurityUpdateChecker.h:374 ]: Security update check: no update found (next check in 24 hours)
+2017/10/03 11:33:51 [error] 21683#0: *5 open() "/var/www/lims_order_entry2/public/public/user/login" failed (2: No such file or directory), client: 192.168.6.211, server: _, request: "GET /user/login HTTP/1.1", host: "192.168.85.208:3010"
+
+[ N 2017-10-03 11:34:14.5179 21646/T7 age/Cor/CoreMain.cpp:588 ]: Signal received. Gracefully shutting down... (send signal 2 more time(s) to force shutdown)
+
+[ N 2017-10-03 11:34:14.5180 21646/T1 age/Cor/CoreMain.cpp:1002 ]: Received command to shutdown gracefully. Waiting until all clients have disconnected...
+[ N 2017-10-03 11:34:14.5180 21654/T4 age/Ust/UstRouterMain.cpp:430 ]: Signal received. Gracefully shutting down... (send signal 2 more time(s) to force shutdown)
+[ N 2017-10-03 11:34:14.5181 21654/T1 age/Ust/UstRouterMain.cpp:500 ]: Received command to shutdown gracefully. Waiting until all clients have disconnected...
+[ N 2017-10-03 11:34:14.5182 21654/T7 Ser/Server.h:886 ]: [UstRouterApiServer] Freed 0 spare client objects
+[ N 2017-10-03 11:34:14.5182 21654/T7 Ser/Server.h:531 ]: [UstRouterApiServer] Shutdown finished
+[ N 2017-10-03 11:34:14.5185 21654/T4 Ser/Server.h:531 ]: [UstRouter] Shutdown finished
+[ N 2017-10-03 11:34:14.5187 21646/Tn Ser/Server.h:886 ]: [ApiServer] Freed 0 spare client objects
+[ N 2017-10-03 11:34:14.5187 21646/Tn Ser/Server.h:531 ]: [ApiServer] Shutdown finished
+[ N 2017-10-03 11:34:14.5189 21654/T1 age/Ust/UstRouterMain.cpp:531 ]: Passenger UstRouter shutdown finished
+[ N 2017-10-03 11:34:14.5190 21646/Tj Ser/Server.h:886 ]: [ServerThr.7] Freed 128 spare client objects
+[ N 2017-10-03 11:34:14.5190 21646/Tj Ser/Server.h:531 ]: [ServerThr.7] Shutdown finished
+[ N 2017-10-03 11:34:14.5191 21646/Tg Ser/Server.h:886 ]: [ServerThr.5] Freed 128 spare client objects
+[ N 2017-10-03 11:34:14.5192 21646/Tg Ser/Server.h:531 ]: [ServerThr.5] Shutdown finished
+[ N 2017-10-03 11:34:14.5193 21646/T9 Ser/Server.h:886 ]: [ServerThr.2] Freed 128 spare client objects
+[ N 2017-10-03 11:34:14.5194 21646/T9 Ser/Server.h:531 ]: [ServerThr.2] Shutdown finished
+[ N 2017-10-03 11:34:14.5194 21646/Tb Ser/Server.h:886 ]: [ServerThr.3] Freed 128 spare client objects
+[ N 2017-10-03 11:34:14.5195 21646/Tb Ser/Server.h:531 ]: [ServerThr.3] Shutdown finished
+[ N 2017-10-03 11:34:14.5195 21646/Td Ser/Server.h:886 ]: [ServerThr.4] Freed 128 spare client objects
+[ N 2017-10-03 11:34:14.5196 21646/Td Ser/Server.h:531 ]: [ServerThr.4] Shutdown finished
+[ N 2017-10-03 11:34:14.5195 21646/Tl Ser/Server.h:886 ]: [ServerThr.8] Freed 128 spare client objects
+[ N 2017-10-03 11:34:14.5196 21646/Tl Ser/Server.h:531 ]: [ServerThr.8] Shutdown finished
+[ N 2017-10-03 11:34:14.5197 21646/T7 Ser/Server.h:886 ]: [ServerThr.1] Freed 128 spare client objects
+[ N 2017-10-03 11:34:14.5197 21646/Th Ser/Server.h:886 ]: [ServerThr.6] Freed 128 spare client objects
+[ N 2017-10-03 11:34:14.5198 21646/T7 Ser/Server.h:531 ]: [ServerThr.1] Shutdown finished
+[ N 2017-10-03 11:34:14.5198 21646/Th Ser/Server.h:531 ]: [ServerThr.6] Shutdown finished
+[ N 2017-10-03 11:34:14.6236 21646/T1 age/Cor/CoreMain.cpp:1068 ]: Passenger core shutdown finished

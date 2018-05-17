@@ -1,0 +1,12 @@
+{
+  "published": true,
+  "name": "Show Create Order",
+  "end_point": "api/v1/create_order/:id.json",
+  "http_method": "GET",
+  "params": [],
+  "header": {},
+  "examples": [{
+    "request": {},
+    "response": {}
+  }]
+}

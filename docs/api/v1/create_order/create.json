@@ -1,0 +1,12 @@
+{
+  "published": true,
+  "name": "Create Create Orders",
+  "end_point": "api/v1/create_order.json",
+  "http_method": "POST",
+  "params": [],
+  "header": {},
+  "examples": [{
+    "request": {},
+    "response": {}
+  }]
+}

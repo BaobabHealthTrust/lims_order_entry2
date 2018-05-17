@@ -1,4 +1,5 @@
 class PatientController < ApplicationController
+ 
   def barcode
     if session[:return_path].present?
       path = session[:return_path]
@@ -76,11 +77,30 @@ class PatientController < ApplicationController
          redirect_to action: 'barcode'
   end
 
+
+  def enter_test_result
+    configs = YAML.load_file "#{Rails.root}/config/application.yml"
+    bart2_address = configs['bart2_address'] + "/people/remote_demographics"
+    details = params[:tracking_number].split("_")
+    tracking_number = details[0]
+    identifier = details[1]
+    @data = JSON.parse(RestClient.post(bart2_address, :content_type => "application/json", :person => {"value" => identifier}))['person'] rescue nil
+ 
+    redirect_to "/patient/barcode" and return if @data.blank?
+    @national_id = @data['patient']['identifiers']['National id']
+    @name = @data['names']
+    @address = @data['addresses']
+    @gender = @data['gender']
+    @dob = @data['birthdate'].to_date rescue nil
+    @age = age(@dob)
+
+  end
+
   def show
 
     configs = YAML.load_file "#{Rails.root}/config/application.yml"
     bart2_address = configs['bart2_address'] + "/people/remote_demographics"
-
+    @direct_result_entry = configs['direct_result_entry']
     @data = JSON.parse(RestClient.post(bart2_address, :content_type => "application/json", :person => {"value" => params["identifier"]}))['person'] rescue nil
     redirect_to "/patient/barcode" and return if @data.blank?
 
@@ -92,30 +112,74 @@ class PatientController < ApplicationController
     @age = age(@dob)
 
     if configs['nlims_controller'] == true
-        @nlims_controller = true
-        url = "localhost:3010/api/v1/query_order_by_npid/#{@national_id}/aRBR5edkE2LC"
-        res =  JSON.parse(RestClient.get(url))
-        @results = {}
-        tracking_number = ""
-        test_results = {}
-        
-        if res['error'] == false
+      token = File.read("#{Rails.root}/tmp/token")
+      check_token_url = "#{configs['nlims_controller_ip']}/api/#{configs['nlims_api_version']}/check_token_validity/#{token}"
+      res = JSON.parse(RestClient.get(check_token_url, :content_type => 'application/json'))
 
-          @tests = res['data']['orders']
+      if res['error'] == false
+                @nlims_controller = true
+                url = "localhost:3010/api/v1/query_order_by_npid/#{@national_id}/#{token}"
+                res =  JSON.parse(RestClient.get(url))
+                @results = {}
+                tracking_number = ""
+                test_results = {}
+                
+                if res['error'] == false
 
-          @tests.each do |t|
-   
-            tracking_number = t['tracking_number']
-            url = "localhost:3010/api/v1/query_results_by_tracking_number/#{tracking_number}/aRBR5edkE2LC"
-            res =  JSON.parse(RestClient.get(url))
-            if res['error'] == true
-            else            
-              @results[tracking_number] = res['data']['results']
-            end
-          end      
-        else
-          
+                  @tests = res['data']['orders']
+
+                  @tests.each do |t|
+           
+                    tracking_number = t['tracking_number']
+                    url = "localhost:3010/api/#{configs['nlims_api_version']}/query_results_by_tracking_number/#{tracking_number}/aRBR5edkE2LC"
+                    res =  JSON.parse(RestClient.get(url))
+                    if res['error'] == true
+                    else            
+                      @results[tracking_number] = res['data']['results']
+                    end
+                  end      
+                else
+                  puts res['message']
+                end
+      else
+        if res['message'] == 'token expired'
+          re_auth_url = "#{configs['nlims_controller_ip']}/api/#{configs['nlims_api_version']}/re_authenticate/#{configs['nlims_custome_username']}/#{configs['nlims_custome_password']}"
+          res = JSON.parse(RestClient.get(re_auth_url, :content_type => 'application/json'))
+          if res['error'] == false
+              token = res['data']['token']
+              File.open("#{Rails.root}/tmp/token", "w") { |f|
+                f.write(token)
+              }
+              @nlims_controller = true
+                url = "localhost:3010/api/#{configs['nlims_api_version']}/query_order_by_npid/#{@national_id}/#{token}"
+                res =  JSON.parse(RestClient.get(url))
+                @results = {}
+                tracking_number = ""
+                test_results = {}
+                
+                if res['error'] == false
+
+                  @tests = res['data']['orders']
+
+                  @tests.each do |t|
+           
+                    tracking_number = t['tracking_number']
+                    url = "localhost:3010/api/#{configs['nlims_api_version']}/query_results_by_tracking_number/#{tracking_number}/aRBR5edkE2LC"
+                    res =  JSON.parse(RestClient.get(url))
+                    if res['error'] == true
+                    else            
+                      @results[tracking_number] = res['data']['results']
+                    end
+                  end      
+                else
+                    puts res['message']
+                end
+          else
+            puts  res['message']
+          end
+
         end
+      end
 
     else
 
@@ -237,18 +301,55 @@ class PatientController < ApplicationController
     }
 
     if configs['nlims_controller'] == true
-      url = "#{configs['nlims_controller_ip']}/api/v1/create_order/aRBR5edkE2LC"
-      paramz = JSON.parse(RestClient.post(url, json))
+      token = File.read("#{Rails.root}/tmp/token")
+      check_token_url = "#{configs['nlims_controller_ip']}/api/#{configs['nlims_api_version']}/check_token_validity/#{token}"
+      res = JSON.parse(RestClient.get(check_token_url, :content_type => 'application/json'))
 
-      if paramz['status'] == 401
+      if res['error'] == false
+          url = "#{configs['nlims_controller_ip']}/api/v1/create_order/#{token}"
+          paramz = JSON.parse(RestClient.post(url, json))
 
-        raise paramz['message'].inspect
-
+          if paramz['status'] == 401
+              msg = paramz['message']
+              redirect_to "/patient/new_lab_results?identifier=#{national_id}", flash: {error: 'national_lims:  ' + msg}           
+          else
+            tracking_number = paramz['data']['tracking_number']            
+            print_url = "/patient/print_tracking_number?tracking_number=#{tracking_number}"
+            print_and_redirect(print_url, "/patient/show?identifier=#{national_id}")
+          end
       else
-        tracking_number = paramz['data']['tracking_number']
-        
-        print_url = "/patient/print_tracking_number?tracking_number=#{tracking_number}"
-        print_and_redirect(print_url, "/patient/show?identifier=#{national_id}")
+          
+        if res['message'] == 'token expired'
+          re_auth_url = "#{configs['nlims_controller_ip']}/api/#{configs['nlims_api_version']}/re_authenticate/#{configs['nlims_custome_username']}/#{configs['nlims_custome_password']}"
+          res = JSON.parse(RestClient.get(re_auth_url, :content_type => 'application/json'))
+          
+          if res['error'] == false
+              token = res['data']['token']
+              File.open("#{Rails.root}/tmp/token", "w") { |f|
+                f.write(token)
+              }
+              url = "#{configs['nlims_controller_ip']}/api/#{configs['nlims_api_version']}/create_order/#{token}"
+              paramz = JSON.parse(RestClient.post(url, json))
+
+              if paramz['status'] == 401
+
+                raise paramz['message'].inspect
+
+              else
+                tracking_number = paramz['data']['tracking_number']
+                
+                print_url = "/patient/print_tracking_number?tracking_number=#{tracking_number}"
+                print_and_redirect(print_url, "/patient/show?identifier=#{national_id}")
+
+              end
+          else
+              msg = res['message']
+              redirect_to "/patient/new_lab_results?identifier=#{national_id}", flash: {error: 'national_lims:  ' + msg}
+          end
+        else
+            msg = res['message']
+            redirect_to "/patient/new_lab_results?identifier=#{national_id}", flash: {error: 'national_lims:  ' + msg}
+        end
 
       end
     else
@@ -274,54 +375,126 @@ class PatientController < ApplicationController
     configs = YAML.load_file "#{Rails.root}/config/application.yml"
 
     if configs['nlims_controller'] == true
-        url = "#{configs['nlims_controller_ip']}/api/v1/query_order_by_tracking_number/#{params[:tracking_number]}/aRBR5edkE2LC"
-        res = JSON.parse(RestClient.get(url))
-        tname = []
+      token = File.read("#{Rails.root}/tmp/token")
+      check_token_url = "#{configs['nlims_controller_ip']}/api/#{configs['nlims_api_version']}/check_token_validity/#{token}"
+      res = JSON.parse(RestClient.get(check_token_url, :content_type => 'application/json'))
 
-        if res['error'] == false
+      if res['error'] == false
+            url = "#{configs['nlims_controller_ip']}/api/#{configs['nlims_api_version']}/query_order_by_tracking_number/#{params[:tracking_number]}/#{token}"
+            res = JSON.parse(RestClient.get(url))
+            tname = []
+
+            if res['error'] == false
 
 
-          patient = res['data']['other']['patient']
-          other = res['data']['other']
-          tests = res['data']['tests']
+              patient = res['data']['other']['patient']
+              other = res['data']['other']
+              tests = res['data']['tests']
 
-            tests.each do |key, value|
-              tname.push(key)
+                tests.each do |key, value|
+                  tname.push(key)
+                end
+                tnam = tname.join(",")
+
+         
+               middle_initial = patient['middle_name'].strip.scan(/\s\w+\s/).first.strip[0 .. 2] rescue ""
+                dob = patient['dob'].to_date.strftime("%d-%b-%Y") rescue '-'
+
+                age = age(dob, other['date_created']) rescue "-"
+
+                gender = patient['gender']
+                col_datetime = other['date_created'].to_datetime.strftime("%d-%b-%Y %H:%M")
+                col_by = other['collector']['name']
+                stat_el = other['priority'].downcase.to_s == "stat" ? "STAT" : nil
+                formatted_acc_num = params["tracking_number"]
+                numerical_acc_num = params['tracking_number']
+                pat_first_name = patient['name'].split(" ")[0]
+                pat_last_name = patient['name'].split(" ")[1]
+              
+
+                auto = Auto12Epl.new
+                s =  auto.generate_epl(pat_first_name.to_s, pat_last_name.to_s, middle_initial.to_s, patient['id'], dob, age.to_s,
+                                       gender.to_s, col_datetime, col_by.to_s, tnam.to_s,
+                                       stat_el, formatted_acc_num.to_s, numerical_acc_num)
+
+                send_data(s,
+                          :type=>"application/label; charset=utf-8",
+                          :stream=> false,
+                          :filename=>"#{params['tracking_number']}-#{rand(10000)}.lbl",
+                          :disposition => "inline"  )
+
+
+
+            else
+              msg = res['message']
+              redirect_to "/patient/new_lab_results?identifier=#{national_id}", flash: {error: 'national_lims:  ' + msg}
             end
-            tnam = tname.join(",")
+      else
+        if res['message'] == 'token expired'
+          re_auth_url = "#{configs['nlims_controller_ip']}/api/#{configs['nlims_api_version']}/re_authenticate/#{configs['nlims_custome_username']}/#{configs['nlims_custome_password']}"
+          res = RestClient.get(re_auth_url, :content_type => 'application/json')
+          if res['error'] == false
+              token = res['data']['token']
+              File.open("#{Rails.root}/tmp/token", "w") { |f|
+                f.write(token)
+              }
+                    url = "#{configs['nlims_controller_ip']}/api/#{configs['nlims_api_version']}/query_order_by_tracking_number/#{params[:tracking_number]}/#{token}"
+                    res = JSON.parse(RestClient.get(url))
+                    tname = []
 
-     
-           middle_initial = patient['middle_name'].strip.scan(/\s\w+\s/).first.strip[0 .. 2] rescue ""
-            dob = patient['dob'].to_date.strftime("%d-%b-%Y") rescue '-'
-
-            age = age(dob, other['date_created']) rescue "-"
-
-            gender = patient['gender']
-            col_datetime = other['date_created'].to_datetime.strftime("%d-%b-%Y %H:%M")
-            col_by = other['collector']['name']
-            stat_el = other['priority'].downcase.to_s == "stat" ? "STAT" : nil
-            formatted_acc_num = params["tracking_number"]
-            numerical_acc_num = params['tracking_number']
-            pat_first_name = patient['name'].split(" ")[0]
-            pat_last_name = patient['name'].split(" ")[1]
-          
-
-            auto = Auto12Epl.new
-            s =  auto.generate_epl(pat_first_name.to_s, pat_last_name.to_s, middle_initial.to_s, patient['id'], dob, age.to_s,
-                                   gender.to_s, col_datetime, col_by.to_s, tnam.to_s,
-                                   stat_el, formatted_acc_num.to_s, numerical_acc_num)
-
-            send_data(s,
-                      :type=>"application/label; charset=utf-8",
-                      :stream=> false,
-                      :filename=>"#{params['tracking_number']}-#{rand(10000)}.lbl",
-                      :disposition => "inline"  )
+                    if res['error'] == false
 
 
+                      patient = res['data']['other']['patient']
+                      other = res['data']['other']
+                      tests = res['data']['tests']
 
-        else
-          raise "eee".inspect
+                        tests.each do |key, value|
+                          tname.push(key)
+                        end
+                        tnam = tname.join(",")
+
+                 
+                       middle_initial = patient['middle_name'].strip.scan(/\s\w+\s/).first.strip[0 .. 2] rescue ""
+                        dob = patient['dob'].to_date.strftime("%d-%b-%Y") rescue '-'
+
+                        age = age(dob, other['date_created']) rescue "-"
+
+                        gender = patient['gender']
+                        col_datetime = other['date_created'].to_datetime.strftime("%d-%b-%Y %H:%M")
+                        col_by = other['collector']['name']
+                        stat_el = other['priority'].downcase.to_s == "stat" ? "STAT" : nil
+                        formatted_acc_num = params["tracking_number"]
+                        numerical_acc_num = params['tracking_number']
+                        pat_first_name = patient['name'].split(" ")[0]
+                        pat_last_name = patient['name'].split(" ")[1]
+                      
+
+                        auto = Auto12Epl.new
+                        s =  auto.generate_epl(pat_first_name.to_s, pat_last_name.to_s, middle_initial.to_s, patient['id'], dob, age.to_s,
+                                               gender.to_s, col_datetime, col_by.to_s, tnam.to_s,
+                                               stat_el, formatted_acc_num.to_s, numerical_acc_num)
+
+                        send_data(s,
+                                  :type=>"application/label; charset=utf-8",
+                                  :stream=> false,
+                                  :filename=>"#{params['tracking_number']}-#{rand(10000)}.lbl",
+                                  :disposition => "inline"  )
+
+
+
+                    else
+                      msg = res['message']
+                      redirect_to "/patient/new_lab_results?identifier=#{national_id}", flash: {error: 'Print Failed! national_lims:  ' + msg}
+                    end
+          else
+            msg = res['message']
+            redirect_to "/patient/new_lab_results?identifier=#{national_id}", flash: {error: 'national_lims:  ' + msg}
+          end
+
         end
+
+      end
 
     else
 

@@ -37,6 +37,10 @@ GEM
       minitest (~> 5.1)
       thread_safe (~> 0.3, >= 0.3.4)
       tzinfo (~> 1.1)
+    angularjs-rails (1.6.8)
+    apidoco (1.5.0)
+      angularjs-rails
+      rails (>= 4.0.0)
     arel (6.0.3)
     autoprefixer-rails (6.5.1)
       execjs
@@ -65,6 +69,7 @@ GEM
       couchrest (>= 1.2)
       mime-types (>= 1.16)
       tzinfo (>= 0.3.22)
+    daemon_controller (1.2.0)
     debug_inspector (0.0.2)
     erubis (2.7.0)
     execjs (2.7.0)
@@ -92,6 +97,10 @@ GEM
     multi_json (1.12.1)
     nokogiri (1.6.8.1)
       mini_portile2 (~> 2.1.0)
+    passenger (4.0.53)
+      daemon_controller (>= 1.2.0)
+      rack
+      rake (>= 0.8.1)
     rack (1.6.4)
     rack-test (0.6.3)
       rack (>= 1.0)
@@ -180,12 +189,14 @@ PLATFORMS
   ruby
 
 DEPENDENCIES
+  apidoco
   bootstrap (= 4.0.0.alpha3)
   byebug
   coffee-rails (~> 4.1.0)
   couchrest_model
   jbuilder (~> 2.0)
   jquery-rails
+  passenger (= 4.0.53)
   rails (= 4.2.6)
   rails-assets-tether (>= 1.1.0)!
   rest-client
@@ -200,4 +211,4 @@ DEPENDENCIES
   whenever
 
 BUNDLED WITH
-   1.12.5
+   1.16.1

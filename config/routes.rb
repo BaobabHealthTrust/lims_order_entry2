@@ -22,6 +22,7 @@ Rails.application.routes.draw do
   post 'patient/dispatchingSummary'
   get 'patient/dispatchingSummary'
   post '/load_orders' => 'patient#load_orders'
+  get  '/patient/enter_test_result' => 'patient#enter_test_result'
   
 
   # Example of regular route:

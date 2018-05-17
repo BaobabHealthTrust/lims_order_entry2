@@ -1,0 +1,12 @@
+{
+  "published": true,
+  "name": "Index Create Orders",
+  "end_point": "api/v1/create_order.json",
+  "http_method": "GET",
+  "params": [],
+  "header": {},
+  "examples": [{
+    "request": {},
+    "response": {}
+  }]
+}
