@@ -41,11 +41,15 @@ class UserController < ApplicationController
       session[:user] = params["name"]
       session[:location] = params["location"]
       session[:return_path] = params["return_path"]
-      session['token'] = params['tk']
-
+      session['token'] = params['tk']   
+      p_gender =  params[:gender]
+      p_name = params[:p_name]
+      p_dob = params[:dob]
+      p_address = params[:address]
+  
       case params['intent']
         when 'new_order'
-          redirect_to "/patient/new_lab_results?identifier=#{params['identifier']}" and return
+          redirect_to "/patient/new_lab_results?identifier=#{params['identifier']}&gender=#{p_gender}&name=#{p_name}&dob=#{p_dob}&address=#{p_address}" and return
         when 'lab_trail'
           redirect_to "/patient/show?identifier=#{params['identifier']}" and return
       end

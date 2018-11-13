@@ -45,10 +45,10 @@
                :multiple =>  true,
                :tt_pageStyleClass => "longSelectList"
 %>
-<%= select_tag "target_lab", options_for_select(['KCH','ZCH','MCH','QCH']), 
+<%= select_tag "target_lab", options_for_select(['Kamuzu Central Hospital','Mzuzu Central Hospital','Mzimba Central Hospital','Nsanje District Hospital','Queens Elizabeth Central Hospital','Thyolo District Hospital','Zomba Central Hospital']), 
     {:helpText => "Target Lab"}%><br>
 
-<%= select_tag "priority", options_for_select(['', 'Routine', 'Stat']),
+<%= select_tag "priority", options_for_select(['', 'Routine', 'Stat','Confirmatory','Targeted']),
                {:helpText => 'Specify Priority',
                 :id => "priority",
                 :tt_onLoad => "__$('nextButton').style.display = 'block';"

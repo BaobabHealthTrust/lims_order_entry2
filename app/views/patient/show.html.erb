@@ -291,9 +291,9 @@
                 <div id = 'headdiv' style="color: darkslategray">
                     <div id="details" >
                         <span class="identifier" style="text-decoration: underline"><%= @national_id %></span><br/>
-                        <span class="label" style="padding-right:80px">Name</span> : <%= ((@name["given_name"] rescue "") + ' ' + (@name["family_name"] rescue "")) %> (<%= @gender rescue ""%>)<br />
-                        <span class="label" style="padding-right:47px">Residence</span>: <%= @address["city_village"] rescue ""%><br />
-                        <span class="label" style="padding-right:92px">Age</span> : <%= @age rescue "" %> 
+                        <span class="label" style="padding-right:80px">Name</span> : <%= ((@name rescue " ") + ' ' + (@name rescue " ")) %> (<%= @gender rescue ""%>)<br />
+                        <span class="label" style="padding-right:47px">Residence</span>: <%= @address rescue " "%><br />
+                        <span class="label" style="padding-right:92px">Age</span> : <%= @age rescue " " %> 
                     </div>
                 </div>
 
@@ -381,7 +381,7 @@
                 <div id="footer">
                     <div id="buttons" class="buttonsDiv" style="width: 100%;">
                         <button id="finishButton" class="button navButton green" onclick="if (tt_cancel_destination)
-                                    window.location = tt_cancel_destination;"><span>Finish</span></button>
+                                    window.location = tt_cancel_destination;"><span>Finishss</span></button>
 
                       <button style="float: left; min-width: 165px;" id="orderTests" class="button navButton blue" onmousedown="
                         window.location = '/patient/new_lab_results?identifier=<%= params[:identifier]%>';"><span>Order Tests</span></button>
