@@ -125,12 +125,14 @@ class PatientController < ApplicationController
       res = JSON.parse(RestClient.get(check_token_url, headers ))
       if res['error'] == false
                 @nlims_controller = true
+                
                 url = "#{configs['nlims_controller_ip']}/api/v1/query_order_by_npid/#{@national_id}"
                 res =  JSON.parse(RestClient.get(url,headers))
                 @results = {}
                 tracking_number = ""
-                test_results = {}                
-                if res['error'] == false
+                test_results = {}               
+                
+                if res['error'] == false                  
                   @tests = res['data']['orders']
                   @tests.each do |t|           
                     tracking_number = t['tracking_number']
@@ -352,8 +354,8 @@ class PatientController < ApplicationController
           else
             tracking_number = paramz['data']['tracking_number']           
             $tra_number = tracking_number       
-            $couch_id =  paramz['data']['couch_id'] 
-            print_url = "/patient/print_tracking_number?tracking_number=#{tracking_number}"
+            $couch_id =  paramz['data']['couch_id']
+            print_url = "/patient/print_tracking_number?tracking_number=#{tracking_number}"           
             print_and_redirect(print_url, "/patient/show?identifier=#{national_id}")
           end
       else
@@ -441,17 +443,17 @@ class PatientController < ApplicationController
                 end
                 tnam = tname.join(",")        
                 middle_initial = patient['middle_name'].strip.scan(/\s\w+\s/).first.strip[0 .. 2] rescue ""
-                dob = patient['dob'].to_date.strftime("%d-%b-%Y") rescue '-'
+                dob = patient['dob'].to_date.strftime("%d-%b-%Y") rescue '-'               
                 age = age(dob, other['date_created']) rescue "-"
                 gender = patient['gender']
                 col_datetime = other['date_created'].to_datetime.strftime("%d-%b-%Y %H:%M")
                 col_by = 'gibo' #other['collector']['name']
-                stat_el = other['priority'].downcase.to_s == "stat" ? "STAT" : nil
+                stat_el = other['priority'].downcase.to_s
                 formatted_acc_num = params["tracking_number"]
                 numerical_acc_num = params['tracking_number']
                 pat_first_name = patient['name'].split(" ")[0]
                 pat_last_name = patient['name'].split(" ")[1]             
-
+                
                 auto = Auto12Epl.new
                 s =  auto.generate_epl(pat_first_name.to_s, pat_last_name.to_s, middle_initial.to_s, patient['id'], dob, age.to_s,
                                        gender.to_s, col_datetime, col_by.to_s, tnam.to_s,
