@@ -313,7 +313,7 @@
                                 </tr>
                             </thead>
                             <tbody>
-                              
+                                
                                 <% if @nlims_controller == true %>
                                 
                                     <% @tests.each {|test|
@@ -321,12 +321,12 @@
                                         ava_results = results_available if results_available
                                         clas = ' gry ' if !results_available
 
-                                    %>
+                                    %> 
                                         <tr>
                                             <td style="text-align: center; border-bottom: 1px solid black;"><%=  test['tracking_number']%></td>
                                             <td style="text-align: center; border-bottom: 1px solid black;"><%= test['specimen_type']%></td>
                                             <td style="text-align: center; border-bottom: 1px solid black;"><%= test['tests'].join(', ')%></td>
-                                            <td style="text-align: center; border-bottom: 1px solid black;"><%= "#{test['date_created']}".html_safe %></td>
+                                            <td style="text-align: center; border-bottom: 1px solid black;"><%= "#{test['date_created'].to_date.strftime('%d-%b-%Y')}".html_safe %></td>
                                             <td style="width: 70px;">
                                               <button class="btn btn-primary" style="padding: 9px;margin: 3px;min-width: 70px;"
                                                       onmousedown="RePrint('<%= test['tracking_number']%>')">Re-print</button>
@@ -377,18 +377,17 @@
                         </table>
                     </div>
                 </div>
-
+           
                 <div id="footer">
                     <div id="buttons" class="buttonsDiv" style="width: 100%;">
                         <button id="finishButton" class="button navButton green" onclick="if (tt_cancel_destination)
-                                    window.location = tt_cancel_destination;"><span>Finishss</span></button>
+                                    window.location = tt_cancel_destination;"><span>Finish</span></button>
 
                       <button style="float: left; min-width: 165px;" id="orderTests" class="button navButton blue" onmousedown="
-                        window.location = '/patient/new_lab_results?identifier=<%= params[:identifier]%>';"><span>Order Tests</span></button>
+                        window.location = '/patient/new_lab_results?identifier=<%= params[:identifier]%>&name=<%= @name %>&gender=<%= @gender %>&dob=<%= @dob %>&address=<%= @address %>'"><span>Order Tests</span></button>
                     </div>
                     <div id="tt_extraButtons"/>
                 </div>
-
 
                 <div id="shield" style="display: none;position:absolute;top:0px; left: 0px; height: 100vh;width:100%;background:black;opacity: 0.06;z-index:1500;"
                 onclick="removeData()"></div>
