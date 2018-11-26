@@ -2,8 +2,16 @@ page_size: 40
 district: Lilongwe
 facility_name: Likuni Mission Hospital
 receiving_facility: Kamuzu Central Hospital
-bart2_address: http://localhost:15000
+bart2_address: http://localhost:3018
 facility_code: 'LIK'
 central_repo: http://localhost:3004
 national-repo-node: http://localhost:3014
-
+nlims_controller: true
+nlims_controller_ip: http://localhost:3010
+nlims_api_version: v1
+nlims_custome_username: lims_order2
+nlims_custome_password: knock_knock
+nlims_default_username: admin
+nlims_default_password: knock_knock
+partner: BHT
+app_name: lims_order_entry2
