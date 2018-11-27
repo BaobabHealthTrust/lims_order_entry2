@@ -383,7 +383,7 @@
                         <button id="finishButton" class="button navButton green" onclick="if (tt_cancel_destination)
                                     window.location = tt_cancel_destination;"><span>Finish</span></button>
 
-                      <button style="float: left; min-width: 165px;" id="orderTests" class="button navButton blue" onmousedown="
+                      <button style="float: left; min-width: 165px;" id="orderTests" class="button navButton blue" onclick="
                         window.location = '/patient/new_lab_results?identifier=<%= params[:identifier]%>&name=<%= @name %>&gender=<%= @gender %>&dob=<%= @dob %>&address=<%= @address %>'"><span>Order Tests</span></button>
                     </div>
                     <div id="tt_extraButtons"/>
